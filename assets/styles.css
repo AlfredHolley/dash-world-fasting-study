@@ -1,0 +1,63 @@
+#logo{
+    margin-top: 35px;
+    margin-left :35px; 
+}
+.header-container{
+    background-color: #f2f5f8;
+    width: 100%;
+    padding: 20px;
+    padding-top : 10px; 
+    margin-top : 20px;
+    height: auto;
+}
+
+/*--------------------------------------------------------------
+## Headings
+--------------------------------------------------------------*/
+h1, h2, h3, h4, h5, h6, p {
+  color: #282828;
+  clear: both;
+  font-family: "VistaSansLight", sans-serif;
+  font-weight: 400;
+  text-align: inherit;
+  margin: 35px 0 10px;
+  line-height: 1.4;
+  position: relative; }
+
+h3 {
+  font-size: -webkit-calc(60px * 0.58);
+  font-size: calc(60px * 0.58);
+  letter-spacing: -0.01em; }
+
+h4 {
+  font-size: -webkit-calc(60px * 0.45);
+  font-size: calc(60px * 0.45); }
+
+h5 {
+  font-size: 1rem;
+  color: #5bc2e7; 
+  font-size: -webkit-calc(65px * 0.33);
+  font-size: calc(70px * 0.33); }
+
+h6 {
+  font-size: 1.1rem; }
+
+p{
+  font-size: 1rem;
+  margin-top:5cap;
+  margin-left: 2cap;
+  margin-right: 2cap;
+
+}
+
+.graph-container-1{
+  padding-left: 10cap; 
+  padding-right: 10cap; 
+}
+
+.row{
+  display: flex;
+  flex-direction: column;
+
+}
+
