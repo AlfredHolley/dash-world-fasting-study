@@ -85,7 +85,7 @@ def layout():
 
     return html.Div([
             dcc.Store(id='store-selected-data'),
-                html.Img(src="assets/BW_logo.svg", alt="BWlogo", width="200px", id = "logo"),
+                html.Img(src="assets/BW_logo.svg", alt="BW_logo", width="200px", id = "logo"),
             html.Div([
                 html.H3("World largest Study on the fasting", id="header-title"),
                 html.H6(f"{text_header}"),
