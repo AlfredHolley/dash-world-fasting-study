@@ -5,3 +5,5 @@ numpy==1.26.3
 pandas==2.2.0
 plotly==5.18.0
 gunicorn==20.1.0
+pyarrow==6.0.1
+fastparquet==0.7.1
