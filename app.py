@@ -10,5 +10,4 @@ app.layout = layout.layout
 # Register callbacks from callbacks.py
 callbacks_register.register_callbacks(app)
 
-if __name__ == '__main__':
-    app.run_server(debug=True, port = 8051)
+app.run()
