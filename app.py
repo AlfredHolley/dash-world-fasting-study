@@ -10,4 +10,4 @@ app.layout = layout.layout
 # Register callbacks from callbacks.py
 callbacks_register.register_callbacks(app)
 
-app.run()
+app.run(host = "0.0.0.0")
