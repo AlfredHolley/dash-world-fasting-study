@@ -41,6 +41,7 @@ def layout():
     well_being = ['PWB (0-10)','EWB (0-10)']
     ketones = ['Acetoacetic acid (mg/dL)']
     blood_analysis = list(set(all_param) - set(clinical_param) - set(well_being) - set(ketones))
+    parameters = [clinical_param, well_being, ketones, blood_analysis]
     def add_switch(id_graph):
         return html.Div(
             [
@@ -65,10 +66,10 @@ def layout():
                             dcc.Dropdown(
                                 id=f'parameter-dropdown-{id_graph}',
                                 options=[
-                                    {'label': param, 'value': param} for param in clinical_param
+                                    {'label': param, 'value': param} for param in parameters[int(id_graph)-1]
                                     ]
                                 ,
-                                value=clinical_param[0]
+                                value=parameters[int(id_graph)-1][0]
                             ),
                             add_switch(id_graph),
                             dcc.Graph(id=f'graph-{id_graph}',config={"displayModeBar": False}),
