@@ -2,12 +2,15 @@ from dash import Dash
 import layout
 import callbacks_register
 
-app = Dash(__name__)
+app = Dash(__name__,
+           meta_tags = [{"name": "viewport",
+                        "content": "width=400, initial-scale=1.0, maximum-scale=5, minimum-scale=0.5"}],)
 
-# Import layout from layout.py
+# Import dbc from dash_bootstrap_components
+# Wrap the layout in dbc.Container
 app.layout = layout.layout
 
 # Register callbacks from callbacks.py
 callbacks_register.register_callbacks(app)
 
-app.run(host = "0.0.0.0")
+app.run(host = "0.0.0.0", debug = True, port = 8050)

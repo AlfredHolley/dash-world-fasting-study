@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "dash-world-fasting-study",
+			"path": "."
+		},
+		{
+			"name": "assets",
+			"path": "../assets"
+		}
+	],
+	"settings": {}
+}

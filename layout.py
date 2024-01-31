@@ -14,34 +14,49 @@ def layout():
         'Mg (mmol/l)', 'Na (mmol/l)', 'PTT (sec)', 'PWB (0-10)',
         'Quick (%)', 'SBP (mmHg)', 'TC (mmol/l)', 'TG (mmol/l)',
         'Thrombocytes (103/µl)', 'Urea (mmol/l)', 'Uric acid (µmol/l)',
-        'glucose (mmol/l)', 'puls (beats/min)', 'waist (cm)',
-        'weight (kg)']
+        'glucose (mmol/l)', 'puls (beats/min)', 'waist (cm)','weight (kg)']
+
+    correlation_params = ['baseline of the parameter', 'fasting duration (days)','age (years)',
+        'weight (kg) change','BMI (kg/m²) change','waist (cm) change', 'SBP (mmHg) change','DBP (mmHg) change',
+        'puls (beats/min) change','LDL-C (mmol/l) change','HDL-C (mmol/l) change','LDL/HDL ratio change',
+        'TG (mmol/l) change', 'glucose (mmol/l) change','HbA1c (mmol/mol) change','TC (mmol/l) change',
+        'Acetoacetic acid (mg/dL) change', 'Uric acid (µmol/l) change',
+        'EWB (0-10) change', 'PWB (0-10) change','GOT (µkat/l) change', 'GPT (µkat/l) change', 'GGT (µkat/l) change',
+        'Na (mmol/l) change', 'Ca (mmol/l) change',  'K (mmol/l) change','Mg (mmol/l) change','PTT (sec) change', 'Erythrocytes (106/µl) change',
+        'Creatinine (µmol/l) change', 'Urea (mmol/l) change', 'Quick (%) change',
+        'Thrombocytes (103/µl) change', 'ESR 1h change', 
+        'CRP (mg/l) change', 'ESR 2h change', 'Leucocytes (103/µl) change', 'MCH (pg) change','MCV (fl) change', 'MCHC (g/dl) change'
+        'Haematocrit (%) change',  'Haemoglobin (mmol/l) change','INR change']
     text_header = """ 
     It was conducted at Buchinger Wilhelmi, a well-established fasting clinic, by a team led by Dr. Françoise Wilhelmi de Toledo and with the support of many of our guests and patients.
     The study collected and evaluated data from 1,422 who completed the Buchinger Wilhelmi fasting programme over a period of 5, 10, 15 or 20 days in 2016. \n
-
-    The results of the study were published online on January 2, 2019 in the peer-reviewed journal PLOS ONE under the title “Safety, health improvement and well-being during a 4 to 21-day fasting period in an observational study including 1422 subjects
-
+    The results of the study were published online on January 2, 2019 in the peer-reviewed journal PLOS ONE under the title “Safety, health improvement and well-being during a 4 to 21-day fasting period in an observational study including 1422 subjects.
     We present an interactive dashboard that leverages the data gathered in this study, offering a dynamic and user-friendly interface for comprehending the outcomes of long-term fasting.
     """
     section_text_1 = """
-    Physicians gathered clinical data, and trained nurses recorded participants' body weight each morning, following a standardized protocol. Blood pressure and pulse were measured in a seated position on the non-dominant arm. Abdominal circumference was determined using a measuring tape placed midway between the lowest rib and the iliac crest.    """
+    Physicians gathered clinical data, and trained nurses recorded participants' body weight each morning, following a standardized protocol. Blood pressure and pulse were measured in a seated position on the non-dominant arm. Abdominal circumference was determined using a measuring tape placed midway between the lowest rib and the iliac crest. 
+       
+    """
 
     section_text_2 = """
     In order to assess well-being, participants under the supervision of nurses provided daily self-reports of their physical well-being and emotional well-being using numeric rating scales ranging from 0 (very bad) to 10 (excellent). The objective was to record the tolerance levels of the fasting program.
+    
     """
     section_text_3 = """
     The participants independently measured the levels of ketone bodies in their first-morning urine by employing Ketostix. Ketone bodies serve as indicators of fat burning, reflecting a shift in energy metabolism from utilizing dietary energy sources to the process of burning stored fats for energy.
+    
     """
     section_text_4 = """
     Blood analysis was conducted following international protocols to understand what are the effects of long-term fasting on lipid profiles, glycemic markers, and blood count metrics to coagulation factors, liver function indicators, inflammatory biomarkers, renal function measures, and electrolyte levels.
     """
-
+    all_text = section_text_1 + "\n" + section_text_2 + "\n" + section_text_3 + "\n" + section_text_4
     clinical_param = ['weight (kg)','BMI (kg/m²)','waist (cm)','SBP (mmHg)','DBP (mmHg)','puls (beats/min)']
     well_being = ['PWB (0-10)','EWB (0-10)']
     ketones = ['Acetoacetic acid (mg/dL)']
     blood_analysis = list(set(all_param) - set(clinical_param) - set(well_being) - set(ketones))
     parameters = [clinical_param, well_being, ketones, blood_analysis]
+    all_parameters = clinical_param + well_being + ketones + blood_analysis
+
     def add_switch(id_graph):
         return html.Div(
             [
@@ -57,60 +72,78 @@ def layout():
                     labelPosition='right', 
                     value = False
                 )
-            ], style = {"display": "flex"})
+            ], id = "toggles-div" )
         
-    def add_box_div(id_graph, section_title, section_text, even = True): 
-        graph_div = html.Div(
-                        children = [
-                            html.H5(section_title), 
-                            dcc.Dropdown(
-                                id=f'parameter-dropdown-{id_graph}',
-                                options=[
-                                    {'label': param, 'value': param} for param in parameters[int(id_graph)-1]
-                                    ]
-                                ,
-                                value=parameters[int(id_graph)-1][0]
-                            ),
-                            add_switch(id_graph),
-                            dcc.Graph(id=f'graph-{id_graph}',config={"displayModeBar": False}),
-                        ]
-                    )
-        text_div = html.Div(html.P(section_text))
-        div_even = html.Div([graph_div, text_div], className="row")
-        div_odd = html.Div([text_div, graph_div], className="row")
-        if even:
-            return div_even
-        return div_odd
-
-
     return html.Div([
             dcc.Store(id='store-selected-data'),
                 html.Img(src="assets/BW_logo.svg", alt="BW_logo", width="200px", id = "logo"),
             html.Div([
-                html.H3("World largest Study on the fasting", id="header-title"),
-                html.H6(f"{text_header}"),
-                html.H6(id='study-characteristics'),
+                html.H4("World largest Study on the fasting", id="header-title"),
+                html.P(f"{text_header}"),
             ], className="header-container"),
 
             html.Div([
-                add_box_div("1", "Clinical measurements", section_text_1), 
-                add_box_div("2", "Well-being", section_text_2, even = False), 
-                add_box_div("3", "Urine analysis", section_text_3), 
-                add_box_div("4", "Blood analysis", section_text_4, even = False), 
+                html.Div(
+                        children = [
+                            html.H5("Measurements"), 
+                            dcc.Dropdown(
+                                id=f'parameter-dropdown-1',
+                                options=[param for param in all_parameters],
+                                value=all_parameters[0],
+                                clearable=False, 
+                                searchable=False
+
+                            ),
+                            dcc.Graph(id=f'graph-1',config={"displayModeBar": False}),
+                            add_switch(1),
+                        ], id = "div-1"
+                    ) 
 
             ], className="graph-container-1"),
-
+            html.Div(html.H4(id='study-characteristics'), className="card_info", style = {"text-align": "center"}), 
             html.Div([
-            dcc.Slider(0, 1, 0.01, value=0.20, marks=None,
-                       id = "slider-heatmap",
-                tooltip={"placement": "bottom", "always_visible": True})
+                dbc.Card([
+                            dbc.CardHeader("Sex proportion"),
+                            dbc.CardBody(
+                                    dcc.Graph(id='sex-pie-chart',config={"displayModeBar": False})
+                                )
+                    ]
+                ),
+                dbc.Card([
+                            dbc.CardHeader("Age (mean)"),
+                            dbc.CardBody([html.Div(html.H4(id='age-text'), className="card_info")]),
+                            dbc.CardFooter(
+                                dcc.RangeSlider(
+                                    18, 100, value=[18,100], allowCross=False, marks  = None, 
+                                    id = "slider-age",
+                                    tooltip={"placement": "bottom", "always_visible": True}
+                                    )
+                            )
+                        ],
+                ), 
+                dbc.Card(
+                        [
+                            dbc.CardHeader("Fasting duration (mean)"),
+                            dbc.CardBody(
+                                [
+                                    html.Div(html.H4(id='length-fast-text'), className="card_info"),
+                                ]
+                            ),
+                        ],
+                    )
+                ], className="card-container",
+            ),
+            html.Div(
+                [
+                    html.Div(dcc.Graph(id = 'graph-2')),
+                    dcc.Dropdown(
+                        id=f'dropdown-heatmap',
+                        options=[param for param in correlation_params],
+                        value=correlation_params[0],
+                        clearable=False,
+                        searchable=False
+                    ),
+                    html.Div(dcc.Graph(id = 'heatmap-graph'), id = "heatmap"),
 
-            ]),
-            html.Div([
-                html.Div(dcc.Graph(id = 'heatmap-graph'), id = "heatmap"),
-                html.Div(dcc.Graph(id = 'graph-5')),
-            ], className="div-heatmap", 
-            style={'width': '100%', 
-                   'height':'1000',
-                   'padding': '10'}),
+                ], className="div-heatmap"),
         ])
