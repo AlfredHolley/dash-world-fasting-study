@@ -1,8 +1,6 @@
-import dash_daq as daq 
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
-import dash_echarts
 import pandas as pd
 # correlation_matrix = pd.read_excel("data/correlation_matrix.xlsx", index_col=0)
 # json_matrix = correlation_matrix.to_dict(orient="records")

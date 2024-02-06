@@ -1,6 +1,5 @@
 from dash import Input, Output, State, callback_context as ctx, ClientsideFunction, html
 from dash.exceptions import PreventUpdate
-import dash
 import pandas as pd
 import numpy as np
 import plotly.express as px
