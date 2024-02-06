@@ -1,7 +1,13 @@
 import dash_daq as daq 
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-
+import dash_mantine_components as dmc
+import dash_echarts
+import pandas as pd
+# correlation_matrix = pd.read_excel("data/correlation_matrix.xlsx", index_col=0)
+# json_matrix = correlation_matrix.to_dict(orient="records")
+correlation_matrix = pd.read_excel("data/correlation_matrix.xlsx", index_col=0)
+json_matrix = [correlation_matrix.to_dict()]
 
 def layout():
     all_param = ['AP (µkat/l)', 'Acetoacetic acid (mg/dL)', 'BMI (kg/m²)',
@@ -25,7 +31,7 @@ def layout():
         'Na (mmol/l) change', 'Ca (mmol/l) change',  'K (mmol/l) change','Mg (mmol/l) change','PTT (sec) change', 'Erythrocytes (106/µl) change',
         'Creatinine (µmol/l) change', 'Urea (mmol/l) change', 'Quick (%) change',
         'Thrombocytes (103/µl) change', 'ESR 1h change', 
-        'CRP (mg/l) change', 'ESR 2h change', 'Leucocytes (103/µl) change', 'MCH (pg) change','MCV (fl) change', 'MCHC (g/dl) change'
+        'CRP (mg/l) change', 'ESR 2h change', 'Leucocytes (103/µl) change', 'MCH (pg) change','MCV (fl) change', 'MCHC (g/dl) change',
         'Haematocrit (%) change',  'Haemoglobin (mmol/l) change','INR change']
     text_header = """ 
     It was conducted at Buchinger Wilhelmi, a well-established fasting clinic, by a team led by Dr. Françoise Wilhelmi de Toledo and with the support of many of our guests and patients.
@@ -37,7 +43,6 @@ def layout():
     Physicians gathered clinical data, and trained nurses recorded participants' body weight each morning, following a standardized protocol. Blood pressure and pulse were measured in a seated position on the non-dominant arm. Abdominal circumference was determined using a measuring tape placed midway between the lowest rib and the iliac crest. 
        
     """
-
     section_text_2 = """
     In order to assess well-being, participants under the supervision of nurses provided daily self-reports of their physical well-being and emotional well-being using numeric rating scales ranging from 0 (very bad) to 10 (excellent). The objective was to record the tolerance levels of the fasting program.
     
@@ -60,22 +65,24 @@ def layout():
     def add_switch(id_graph):
         return html.Div(
             [
-                daq.ToggleSwitch(
-                    id = f"switch-{id_graph}",
-                    label='show changes',
-                    labelPosition='right',
-                    value = False
-                ),
-                daq.ToggleSwitch(
+                dcc.Store(id='data-store', data={'matrix': json_matrix, 'current_data':None}),
+                dcc.Store(id="store-selected-data"),
+
+                dmc.Switch(
+                    size="xs",
+                    label="changes",
+                    checked=False,
+                    id =  f"switch-{id_graph}"
+                    ), 
+                dmc.Switch(
+                    size="xs",
                     id = f"switch-selected-{id_graph}",
-                    label='show comparaison with selected data',
-                    labelPosition='right', 
-                    value = False
+                    label='selected data ',
+                    checked = False
                 )
             ], id = "toggles-div" )
         
     return html.Div([
-            dcc.Store(id='store-selected-data'),
                 html.Img(src="assets/BW_logo.svg", alt="BW_logo", width="200px", id = "logo"),
             html.Div([
                 html.H4("World largest Study on the fasting", id="header-title"),
@@ -94,12 +101,19 @@ def layout():
                                 searchable=False
 
                             ),
-                            dcc.Graph(id=f'graph-1',config={"displayModeBar": False}),
+                            dcc.Graph(id=f'graph-1',
+                            config={
+                                "displayModeBar": True,
+                                'displaylogo': False,
+                                "modeBarButtonsToRemove" :["toImage","zoom2d", "pan2d","lasso2d", "zoomIn2d", "zoomOut2d", "autoScale2d", "resetScale2d",
+                                                    "hoverClosestCartesian", "hoverCompareCartesian", "toggleSpikelines", "resetViews",],
+                                }),
                             add_switch(1),
                         ], id = "div-1"
                     ) 
 
             ], className="graph-container-1"),
+
             html.Div(html.H4(id='study-characteristics'), className="card_info", style = {"text-align": "center"}), 
             html.Div([
                 dbc.Card([
@@ -133,17 +147,77 @@ def layout():
                     )
                 ], className="card-container",
             ),
-            html.Div(
-                [
-                    html.Div(dcc.Graph(id = 'graph-2')),
+            html.Div([
+                html.Div(
                     dcc.Dropdown(
-                        id=f'dropdown-heatmap',
-                        options=[param for param in correlation_params],
-                        value=correlation_params[0],
+                        id=f'dropdown-heatmap-Y',
+                        options=[{"label": str(param), "value": param } for param in correlation_params],
+                        value="weight (kg) change",
                         clearable=False,
-                        searchable=False
+                        searchable=False,
+                    )
+                    ,id = "dropY-div"
+                ),
+                html.Div(
+                    children=[
+                            html.Div(
+                                id ="heatmap-graph-Y",
+                                className='dropdown-content',
+                                children=[
+                                    html.Div(id=f"Y-menu-div-{i}") for i in range(1, 42)
+                                ])
+                            ], id = "Y-heatmap-div"
+                        
                     ),
-                    html.Div(dcc.Graph(id = 'heatmap-graph'), id = "heatmap"),
+                html.Div(id= "blank-div"),	
+                dcc.Graph(
+                    id = 'graph-2',
+                    config={
+                    "displayModeBar": True,
+                    'displaylogo': False,
+                    "modeBarButtonsToRemove" :["toImage","zoom2d", "pan2d","select2d",
+                                    "zoomIn2d", "zoomOut2d", "autoScale2d", "resetScale2d",
+                                    "hoverClosestCartesian", "hoverCompareCartesian", 
+                                    "toggleSpikelines", "resetViews"],
 
-                ], className="div-heatmap"),
-        ])
+                }),
+                html.Div([
+                    html.Div(
+                        dcc.Dropdown(
+                            id=f'dropdown-heatmap-X',
+                            options=[{"label": param, "value":param } for param in correlation_params],
+                            value='baseline of the parameter',
+                            clearable=False,
+                            searchable=False,
+                            style={"width": "48vw","font-size": "13px"},
+                        )
+                    , id = "dropX-div"),
+                    html.Div(
+                        children=[
+                            html.Div(
+                                id ="heatmap-graph-X",
+                                className='dropdown-content',
+                                children=[
+                                    html.Div(id=f"X-menu-div-{i}") for i in range(1, 42)
+                                ])
+                            ], id = "X-heatmap-div"
+                    ),
+                # html.Div(dcc.Graph(id = 'heatmap-graph', config={"displayModeBar": False} ), id = "heatmap-div"),
+                ])
+            ], id = "div-graph-2"),
+
+            html.Div([
+                # dash_echarts.DashECharts(
+                #     id = "visualMap-id", 
+                # ),  
+
+                # html.Div([
+                    # html.Img(src="data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' width='25' height='25' viewBox='0 0 24 24'><path fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 5v14m6-6l-6 6m-6-6l6 6'/></svg>"),
+                    # html.P("Correlation with the parameter selected : click on a parameter the Y-axis of the graph."),
+                    # html.Img(src="data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' width='25' height='25' viewBox='0 0 24 24'><path fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 5v14m6-6l-6 6m-6-6l6 6'/></svg>"),
+                # ], style = {"text-align": "center", "font-size": "12px", "display":"flex", "justify-content":"center"}),
+                # html.Div(dcc.Graph(id = 'heatmap-graph', config={"displayModeBar": False} ), id = "heatmap-div"),
+            ], className="div-heatmap",    
+            ),
+
+    ])

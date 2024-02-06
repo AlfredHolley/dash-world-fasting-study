@@ -4,7 +4,7 @@ import callbacks_register
 
 app = Dash(__name__,
            meta_tags = [{"name": "viewport",
-                        "content": "width=400, initial-scale=1.0, maximum-scale=5, minimum-scale=0.5"}],)
+                        "content": "width=device-width, initial-scale=1.0, maximum-scale=5, minimum-scale=0.5"}],)
 
 # Import dbc from dash_bootstrap_components
 # Wrap the layout in dbc.Container

@@ -1,4 +1,4 @@
-from dash import Input, Output, State, callback_context as ctx
+from dash import Input, Output, State, callback_context as ctx, ClientsideFunction, html
 from dash.exceptions import PreventUpdate
 import dash
 import pandas as pd
@@ -16,7 +16,7 @@ correlation_matrix = pd.read_excel("data/correlation_matrix.xlsx", index_col=0)
 df = df_raw.reset_index(drop = True).set_index("id").copy()
 df0 =df.query("timepoint.eq(0)").copy()
 df1 =df.query("timepoint.eq(1)").copy()
-
+list_param_correlation = list(correlation_matrix.index)
 
 def update_scatter(clickData, parameter, selected_id, selectedpoints_local):
     selectedpoint = []
@@ -28,6 +28,9 @@ def update_scatter(clickData, parameter, selected_id, selectedpoints_local):
             x = y[:-7]
         else : 
             x = parameter
+    elif clickData.get('points')[0].get('y') == 'baseline of the parameter':
+        x = parameter
+        y = x[:-7]
     else : 
         y = clickData.get('points')[0].get('y')
         if parameter == 'baseline of the parameter': 
@@ -46,10 +49,15 @@ def update_scatter(clickData, parameter, selected_id, selectedpoints_local):
     )
 
     fig.update_layout(
-        margin={"l": 30, "r": 20, "b": 15, "t": 45},
+        modebar_activecolor="rgb(0,0,0)" if len(selectedpoint) < 1 else "rgb(255,0,0)",
+        margin={"l": 0, "r": 20, "b": 0, "t": 45},
         dragmode="lasso",
         newselection_mode="gradual",
+        plot_bgcolor='rgba(245,245,247,1)',
     )
+    fig.update_xaxes(fixedrange=True, title= None)
+    fig.update_yaxes(fixedrange=True, gridcolor='rgba(0,0,0,0.065)', ticklabelposition="inside top", title=None)
+
     if selectedpoints_local and selectedpoints_local["lassoPoints"]:
             lasso_points = selectedpoints_local["lassoPoints"]
             x_points = lasso_points['x']
@@ -129,10 +137,15 @@ def update_boxplot(selected_y, selected_id, selectedpoints_local, display_select
             )
 
             fig_selected.update_layout(
+                modebar_remove= ["select", "select2d"], 
                 xaxis_title='points are not selectable',
                 margin = {"l": 10, "r": 10, "b": 0, "t": 25},
-                boxmode='group' # group together boxes of the different traces for each value of x
+                boxmode='group', # group together boxes of the different traces for each value of x
+                plot_bgcolor='rgba(245,245,247,1)',
+
             )
+            fig_selected.update_xaxes(fixedrange=True)
+            fig_selected.update_yaxes(fixedrange=True, gridcolor='rgba(0,0,0,0.065)')
 
     else : 
         selected_y = selected_y + " change"
@@ -179,11 +192,14 @@ def update_boxplot(selected_y, selected_id, selectedpoints_local, display_select
                 mode="markers",
             )
             fig_selected.update_layout(
-                plot_bgcolor="white",
+                modebar_remove= ["select", "select2d"], 
+                plot_bgcolor='rgba(245,245,247,1)',
                 xaxis_title='points are not selectable',
                 margin = {"l": 10, "r": 10, "b": 30, "t": 25},
+                
             )
-
+            fig_selected.update_xaxes(fixedrange=True)
+            fig_selected.update_yaxes(fixedrange=True, gridcolor='rgba(0,0,0,0.065)')
     fig.update_traces(
         selector=dict(type='scatter'),
         selectedpoints=selectedpoints,
@@ -191,20 +207,21 @@ def update_boxplot(selected_y, selected_id, selectedpoints_local, display_select
         selected={"marker": {"opacity": 0.8,"color" : "red"}},
         unselected={"marker": {"opacity": 0.35, "color" : "blue"}},
     )
-
     fig.update_layout(
         margin={"l": 30, "r": 20, "b": 0, "t": 15},
         dragmode="select",
+        modebar_activecolor="rgb(0,0,0)" if len(selected_id) < 1 else "rgb(255,0,0)",
         newselection_mode="gradual",
         xaxis_range = [-0.5, 1.5] if diff == False else [-0.5, 0.5],
         yaxis_range = [min(df[selected_y]) - (max(df[selected_y])/10), max(df[selected_y]) + (max(df[selected_y])/10)],
-        font=dict(size=15.2)
-
+        plot_bgcolor='rgba(245,245,247,1)',
     )
     fig.update_xaxes(
+        fixedrange=True,
         tickvals= [0,1] if diff == False else [0],  # List of positions where ticks should be displayed
         ticktext=["pre", "post"]  if diff == False else ["change"],  # List of labels corresponding to each tick position
     )
+    fig.update_yaxes(fixedrange=True, gridcolor='rgba(0,0,0,0.065)')
 
     if selectedpoints_local and selectedpoints_local["range"]:
         ranges = selectedpoints_local["range"]
@@ -231,9 +248,9 @@ def register_callbacks(app):
     )
     def update_study_characteristics(selected_data):
         if not selected_data :
-            return f"1422 subjects."
+            return f"1422 subjects"
         elif len(selected_data) == 0:
-            return f"1422 subjects."
+            return f"1422 subjects"
         n = len(selected_data)
         return f"{n}/1422 selected"
     
@@ -244,10 +261,10 @@ def register_callbacks(app):
         Input(f"graph-1", "selectedData"),
         Input(f"graph-2", "selectedData"),
         State(f"parameter-dropdown-1", "value"),
-        State(f"switch-1", "value"),
-        State(f"switch-selected-1", "value"),
-        State("heatmap-graph", "clickData"),
-        State("dropdown-heatmap", "value"),
+        State(f"switch-selected-1", "checked"),
+        State(f"switch-1", "checked"),
+        State("heatmap-graph-X", "clickData"),
+        State("dropdown-heatmap-X", "value"),
         State("store-selected-data", "data"),
         prevent_initial_call=True
     )
@@ -279,8 +296,8 @@ def register_callbacks(app):
     @app.callback(
         Output("graph-1", "figure"),
         Input("parameter-dropdown-1", "value"),
-        Input(f"switch-selected-1", "value"),
-        Input(f"switch-1", "value"),
+        Input(f"switch-selected-1", "checked"),
+        Input(f"switch-1", "checked"),
         State("store-selected-data", "data"),
     )
     def callback_parameter_box(parameter, switch_1, switch_2, selected_ids):
@@ -327,39 +344,163 @@ def register_callbacks(app):
 
 
     @app.callback(
-        Output("heatmap-graph", "figure"),
-        Input("dropdown-heatmap", "value"),
+        Output("data-store", "data"),
+        Input("dropdown-heatmap-X", "value"),
+        Input("dropdown-heatmap-Y", "value"),
+        State("data-store", "data"),
     )
-    def update_heatmap(param):
-        filtered_matrix = correlation_matrix.loc[:,param].reset_index().set_index("index").dropna()
-        filtered_matrix.sort_values(by = param,inplace=True)
-        filtered_matrix = filtered_matrix[filtered_matrix.index != param]
-        fig = go.Figure(
-            data=go.Heatmap(
-                x=filtered_matrix.columns,
-                y=filtered_matrix.index,    
-                z=filtered_matrix.values,
-                colorscale='RdBu',
-                colorbar=dict(title='Correlation', orientation="v", thickness=15, tickfont=dict(size=9)),
-                hoverongaps = False, 
-                hoverinfo='none',  # Disable hovering
-                text=[[name] for name in list(filtered_matrix.index)],
-                texttemplate="%{text}",
-                textfont={"size":10}
-                )
+    def update_heatmap_data( param_x, param_y, data):
+        matrix = data["matrix"]
+        if ctx.triggered_id == "dropdown-heatmap-X":
+            dataY = {key: round(float(value),2) for key, value in matrix[0].get(f"{param_x}").items() if not str(value) =="None"}
+            dataY_sorted = dict(sorted(dataY.items(), key=lambda item: abs(item[1]), reverse=True))
+            data["Y"] = dataY_sorted
+            return data
+        elif ctx.triggered_id == "dropdown-heatmap-Y":
+            dataX = {key: round(float(value),2) for key, value in matrix[0].get(f"{param_y}").items() if not str(value) =="None"}
+            dataX_sorted = dict(sorted(dataX.items(), key=lambda item: abs(item[1]), reverse=True))
+            data["X"] = dataX_sorted
+            return data
+        else : 
+            dataY = {key: round(float(value),2) for key, value in matrix[0].get(f"{param_x}").items() if not str(value) =="None"}
+            dataY_sorted = dict(sorted(dataY.items(), key=lambda item: abs(item[1]), reverse=True))
+            data["Y"] = dataY_sorted
+            dataX = {key: round(float(value),2) for key, value in matrix[0].get(f"{param_y}").items() if not str(value) =="None"}
+            dataX_sorted = dict(sorted(dataX.items(), key=lambda item: abs(item[1]), reverse=True))
+            data["X"] = dataX_sorted
+
+            return data
+    @app.callback(
+            Output('dropdown-heatmap-X', 'value'),
+            [Input(f'X-menu-div-{i}', 'n_clicks_timestamp') for i in range(1, 42)],
+            State("data-store", "data"),
+    )
+    def update_Xvalue(*args):
+        data = args[-1]
+        if not ctx.triggered_id :
+            raise PreventUpdate
+        id_menu = ctx.triggered_id[-2:]
+        try: 
+            id_menu = abs(int(id_menu))
+        except:
+            id_menu = int(id_menu[1])
+        new_param = list(data["X"].keys())[id_menu-1]
+        return new_param
+    
+    @app.callback(
+        Output('heatmap-graph-X', 'children'),
+        Input('dropdown-heatmap-Y', 'value'),        
+        Input('data-store', 'data'),
+    )
+    def update_output_div(param, data):
+        def get_background_color(value):
+            # Map the absolute value to a color intensity between 0 (white) and 255 (red)
+            intensity = int(255 * abs(value))
+            return f'rgba(0, 0,255, {intensity/400})'
+        print(data["matrix"][0].get(f"{param}"))
+        filtered_data_dict = {key: round(float(value),2) for key, value in data["matrix"][0].get(f"{param}").items() if not str(value) =="None"}
+        sorted_data_dict = dict(sorted(filtered_data_dict.items(), key=lambda item: abs(item[1]), reverse=True))
+
+        children = [
+            html.Div(
+                html.P(f'{content[0]} : {content[1]}'),
+                id=f'X-menu-div-{i+1}',
+                className='div-menu',
+                style={'background-color': get_background_color(content[1])}
             )
-        fig.update_layout(
-                margin=dict(l=30, r=20, t=50, b=0),
-                yaxis = dict(title = "",showticklabels=False ),
-                xaxis = dict(title = "",showticklabels=False ),
+            for i, content in enumerate(sorted_data_dict.items())
+        ]
+        return children
+
+    @app.callback(
+        Output('heatmap-graph-Y', 'children'),
+        Input('dropdown-heatmap-X', 'value'),        
+        Input('data-store', 'data'),
+    )
+    def update_output_div(param, data):
+        def get_background_color(value):
+            # Map the absolute value to a color intensity between 0 (white) and 255 (red)
+            intensity = int(255 * abs(value))
+            return f'rgba(0, 0,255, {intensity/400})'
+        print(data["matrix"][0].get(f"{param}"))
+        filtered_data_dict = {key: round(float(value),2) for key, value in data["matrix"][0].get(f"{param}").items() if not str(value) =="None"}
+        sorted_data_dict = dict(sorted(filtered_data_dict.items(), key=lambda item: abs(item[1]), reverse=True))
+
+        children = [
+            html.Div(
+                html.P(f'{content[0]} : {content[1]}'),
+                id=f'Y-menu-div-{i+1}',
+                className='div-menu',
+                style={'background-color': get_background_color(content[1])}
             )
-        fig.update_xaxes(title=f"Correlation with: {param}")
-        return fig
+            for i, content in enumerate(sorted_data_dict.items())
+        ]
+        return children
+
+    app.clientside_callback(
+        """
+        function(n_clicks_1) {
+            updateDivDisplay(n_clicks_1);
+            return {};
+        }
+        """,
+        Output('X-heatmap-div', 'style', allow_duplicate=True),
+        Input('dropX-div', 'n_clicks'),
+        prevent_initial_call=True   
+    )
+    app.clientside_callback(
+        """
+        function(n_clicks_2) {
+            updateDivDisplay_2(n_clicks_2);
+            return {};
+        }
+        """,
+        Output('X-heatmap-div', 'style'),
+        Input('X-heatmap-div', 'n_clicks_timestamp'),
+    )
+
+    # app.clientside_callback(
+    #     """
+    #     function(contentId,...timestamps, heatmapDivDisplay) {
+    #         timestamps = timestamps.map(timestamp => timestamp || 0);
+    #         var highestTimestamp = Math.max(...timestamps);
+    #         var clicked_id = null;
+
+    #         for (var i = 1; i <= timestamps.length; i++) {
+    #             if (timestamps[i - 1] === highestTimestamp) {
+    #                 clicked_id = 'div-' + i;
+    #                 break;
+    #             }
+    #         }
+    #         console.log('Clicked ID:', clicked_id);
+
+    #         if (clicked_id) {
+    #             var contentElement = document.getElementById(contentId);
+    #             var clickedContent = document.getElementById(clicked_id);
+    #             var heatmapDiv = document.getElementById('heatmap-div');
+
+    #             if (heatmapDiv && window.getComputedStyle(heatmapDiv).display === 'none') {
+    #                 return 'weight (kg) change';
+    #             }
+
+    #             if (contentElement && clickedContent) {
+    #                 return clickedContent.textContent.trim();
+    #             }
+    #         }
+    #         return null;
+    #     }
+    #     """,
+    #     Output('dropdown-heatmap-X', 'value'),
+    #     Input('dropdown-heatmap-X', 'id'),
+    #     [Input(f'menu-div-{i}', 'n_clicks_timestamp') for i in range(1, 42)],
+    #     State('heatmap-div', 'style'),
+
+    # )
 
     @app.callback(
         Output("graph-2", "figure"),
-        Input("heatmap-graph", "clickData"),
-        Input("dropdown-heatmap", "value"),
+        Input("heatmap-graph-X", "clickData"),
+        Input("dropdown-heatmap-X", "value"),
         State("store-selected-data", "data"),
     )
     def callback_parameter_scatter(clickData, parameter, selected_ids):
@@ -367,6 +508,27 @@ def register_callbacks(app):
             selected_ids = []
         return update_scatter(clickData, parameter, selected_ids, None)
 
+    # @app.callback(
+    #     Output("visualMap-id", "option"),
+    #     Input("dropdown-heatmap-X", "value"),
+    # )
+    # def load_visualMap(param):
+    #     return {
+    #         'visualMap': {
+    #             'min': -1.0,
+    #             'max': 1.0,
+    #             "top":0,
+    #             "right":0,
+    #             'left': 0,
+    #             "borderColor" : "#fff111",
+    #             'itemWidth':90,
+    #             'itemHeight':30, 
+
+    #             'bottom': 0,
+    #             'calculable': True,
+    #             'orient': 'horizontal',
+    #             }
+    #         }
     # @app.callback(
     #     Output("store-selected-data", "data"),
     #     Input("slider-age", "value"),
