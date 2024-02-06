@@ -8,3 +8,4 @@ pyarrow==13.0.0
 fastparquet==2023.8.0
 openpyxl==3.1.2
 statsmodels==0.14.0
+dash_mantine_components==0.12.1
