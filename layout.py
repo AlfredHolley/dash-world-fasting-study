@@ -63,7 +63,7 @@ def layout():
     def add_switch(id_graph):
         return html.Div(
             [
-                dcc.Store(id='data-store', data={'matrix': json_matrix, 'current_data':None}),
+                dcc.Store(id='data-store', data= json_matrix),
                 dcc.Store(id="store-selected-data"),
 
                 dmc.Switch(
@@ -146,6 +146,7 @@ def layout():
                 ], className="card-container",
             ),
             html.Div([
+                html.Div(id = "updiv-Y"), 
                 html.Div(
                     dcc.Dropdown(
                         id=f'dropdown-heatmap-Y',
@@ -153,8 +154,7 @@ def layout():
                         value="weight (kg) change",
                         clearable=False,
                         searchable=False,
-                    )
-                    ,id = "dropY-div"
+                    ), id = "dropY-div"
                 ),
                 html.Div(
                     children=[
@@ -162,8 +162,9 @@ def layout():
                                 id ="heatmap-graph-Y",
                                 className='dropdown-content',
                                 children=[
-                                    html.Div(id=f"Y-menu-div-{i}") for i in range(1, 42)
-                                ])
+                                    html.Div(id=f"Y-menu-div-{i}", className = "div-menu") for i in range(1, 45)
+                                ]
+                                )
                             ], id = "Y-heatmap-div"
                         
                     ),
@@ -180,42 +181,34 @@ def layout():
 
                 }),
                 html.Div([
-                    html.Div(
+                    html.Div([
+                        html.Div(
+                            id=f'updiv-X',
+                            style={"width": "48vw","font-size": "13px", "z-index": 1000},
+                        ), 
                         dcc.Dropdown(
-                            id=f'dropdown-heatmap-X',
+                            id = "dropdown-heatmap-X", 
                             options=[{"label": param, "value":param } for param in correlation_params],
                             value='baseline of the parameter',
                             clearable=False,
                             searchable=False,
                             style={"width": "48vw","font-size": "13px"},
                         )
-                    , id = "dropX-div"),
+                    ], id = "dropX-div"
+                    ),
                     html.Div(
                         children=[
                             html.Div(
                                 id ="heatmap-graph-X",
                                 className='dropdown-content',
                                 children=[
-                                    html.Div(id=f"X-menu-div-{i}") for i in range(1, 42)
+                                    html.Div(id=f"X-menu-div-{i}", className = "div-menu") for i in range(1, 45)
                                 ])
                             ], id = "X-heatmap-div"
                     ),
-                # html.Div(dcc.Graph(id = 'heatmap-graph', config={"displayModeBar": False} ), id = "heatmap-div"),
                 ])
             ], id = "div-graph-2"),
 
-            html.Div([
-                # dash_echarts.DashECharts(
-                #     id = "visualMap-id", 
-                # ),  
-
-                # html.Div([
-                    # html.Img(src="data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' width='25' height='25' viewBox='0 0 24 24'><path fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 5v14m6-6l-6 6m-6-6l6 6'/></svg>"),
-                    # html.P("Correlation with the parameter selected : click on a parameter the Y-axis of the graph."),
-                    # html.Img(src="data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' width='25' height='25' viewBox='0 0 24 24'><path fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 5v14m6-6l-6 6m-6-6l6 6'/></svg>"),
-                # ], style = {"text-align": "center", "font-size": "12px", "display":"flex", "justify-content":"center"}),
-                # html.Div(dcc.Graph(id = 'heatmap-graph', config={"displayModeBar": False} ), id = "heatmap-div"),
-            ], className="div-heatmap",    
-            ),
+            html.Div([], className="div-heatmap"),
 
     ])

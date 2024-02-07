@@ -1,4 +1,4 @@
-from dash import Input, Output, State, callback_context as ctx, ClientsideFunction, html
+from dash import Input, Output, State, callback_context as ctx, ClientsideFunction, Patch
 from dash.exceptions import PreventUpdate
 import pandas as pd
 import numpy as np
@@ -17,21 +17,21 @@ df0 =df.query("timepoint.eq(0)").copy()
 df1 =df.query("timepoint.eq(1)").copy()
 list_param_correlation = list(correlation_matrix.index)
 
-def update_scatter(clickData, parameter, selected_id, selectedpoints_local):
+def update_scatter(parameterY, parameter, selected_id, selectedpoints_local):
     selectedpoint = []
     if selected_id : 
         selectedpoint = [s_id - 1 for s_id in selected_id]
-    if clickData is None:
+    if parameterY is None:
         y = "weight (kg) change"
         if parameter == 'baseline of the parameter':
             x = y[:-7]
         else : 
             x = parameter
-    elif clickData.get('points')[0].get('y') == 'baseline of the parameter':
+    elif parameterY == 'baseline of the parameter':
         x = parameter
         y = x[:-7]
     else : 
-        y = clickData.get('points')[0].get('y')
+        y = parameterY
         if parameter == 'baseline of the parameter': 
             x = y[:-7]
         else :
@@ -68,7 +68,7 @@ def update_scatter(clickData, parameter, selected_id, selectedpoints_local):
             }
             fig.add_shape(lasso_shape)
 
-    return fig
+    return {"data": fig.data, "layout": fig.layout}
 
 
 def update_boxplot(selected_y, selected_id, selectedpoints_local, display_selected_box, diff = False):
@@ -238,7 +238,7 @@ def update_boxplot(selected_y, selected_id, selectedpoints_local, display_select
     if display_selected_box == True and selected_id: 
         return fig_selected
     else :
-        return fig
+        return  {"data": fig.data, "layout": fig.layout}
 
 def register_callbacks(app):
     @app.callback(
@@ -256,18 +256,19 @@ def register_callbacks(app):
     @app.callback(
         Output(f"graph-1", "figure", allow_duplicate=True),
         Output(f"graph-2", "figure", allow_duplicate=True),
-        Output("store-selected-data", "data",allow_duplicate=True),
+        Output("store-selected-data", "data", allow_duplicate=True),
         Input(f"graph-1", "selectedData"),
         Input(f"graph-2", "selectedData"),
+        Input(f"slider-age", "value"),
         State(f"parameter-dropdown-1", "value"),
         State(f"switch-selected-1", "checked"),
         State(f"switch-1", "checked"),
-        State("heatmap-graph-X", "clickData"),
+        State("dropdown-heatmap-Y", "value"),
         State("dropdown-heatmap-X", "value"),
         State("store-selected-data", "data"),
         prevent_initial_call=True
     )
-    def callback_on_selection(select_1, select_2, parameter, switch_box_1, switch_box_2, click_heatmap, dropdown_scatter, current_data):
+    def callback_on_selection(select_1, select_2, age, parameter, switch_box_1, switch_box_2, parameterY, dropdown_scatter, current_data):
         if not current_data :
             current_data = []
         number_id = ctx.triggered_id[-1]
@@ -276,9 +277,15 @@ def register_callbacks(app):
         selection_of_trigger =  selected_data[int(number_id)-1]
         if selection_of_trigger and selection_of_trigger["points"]:
             selected_id = [p["pointIndex"] + 1 for p in selection_of_trigger["points"]]
+
         else :
             selected_id = [] 
+        print("age : ", age)
 
+        print("selected_id : ", len(set(selected_id)))
+
+        selected_id = list(set(selected_id).intersection(set(df0[df0["age (years)"].between(age[0], age[1])].index)))
+        print("selected_id after: ", len(set(selected_id)))
         boxes = [
             update_boxplot(
                 parameter, selected_id,
@@ -286,7 +293,7 @@ def register_callbacks(app):
                 switch_box_1, switch_box_2)]
         scatter = [
             update_scatter(
-                click_heatmap, dropdown_scatter, selected_id,
+                parameterY, dropdown_scatter, selected_id,
                 selected_data[1] if number_id == "2" else None,
             )]
             
@@ -303,6 +310,25 @@ def register_callbacks(app):
         if not selected_ids : 
             selected_ids = []
         return update_boxplot(parameter, selected_ids, None, switch_1, switch_2)
+
+    @app.callback(
+        Output("graph-2", "figure"),
+        Input("dropdown-heatmap-Y", "value"),
+        Input("dropdown-heatmap-X", "value"),
+        State("store-selected-data", "data"),
+    )
+    def callback_parameter_scatter(parameterY, parameter, selected_ids):
+        if not selected_ids : 
+            selected_ids = []
+        # if ctx.triggered_id is None:
+        #     return update_scatter(parameterY, parameter, selected_ids, None)
+        # else :
+        #     fig_patched = Patch()
+        #     fig_patched["data"] = update_scatter(parameterY, parameter, selected_ids, None)["data"]
+        #     return fig_patched
+        # patched_figure["data"] = 
+        return update_scatter(parameterY, parameter, selected_ids, None)
+
 
     @app.callback(
         Output('sex-pie-chart', 'figure'),
@@ -342,201 +368,105 @@ def register_callbacks(app):
         return text_age, text_length_fast
 
 
-    @app.callback(
-        Output("data-store", "data"),
-        Input("dropdown-heatmap-X", "value"),
-        Input("dropdown-heatmap-Y", "value"),
-        State("data-store", "data"),
+    app.clientside_callback(
+        """
+        function(param, data) {
+            childrens = window.dash_clientside.clientside.div_creator(param, data);
+            return childrens;
+        }
+        """,
+        [Output(f'X-menu-div-{i+1}', 'children') for i in range(0, 44)],
+        [Output(f'X-menu-div-{i+1}', 'style') for i in range(0, 44)],
+        Input('dropdown-heatmap-Y', 'value'),
+        State('data-store', 'data'),
     )
-    def update_heatmap_data( param_x, param_y, data):
-        matrix = data["matrix"]
-        if ctx.triggered_id == "dropdown-heatmap-X":
-            dataY = {key: round(float(value),2) for key, value in matrix[0].get(f"{param_x}").items() if not str(value) =="None"}
-            dataY_sorted = dict(sorted(dataY.items(), key=lambda item: abs(item[1]), reverse=True))
-            data["Y"] = dataY_sorted
-            return data
-        elif ctx.triggered_id == "dropdown-heatmap-Y":
-            dataX = {key: round(float(value),2) for key, value in matrix[0].get(f"{param_y}").items() if not str(value) =="None"}
-            dataX_sorted = dict(sorted(dataX.items(), key=lambda item: abs(item[1]), reverse=True))
-            data["X"] = dataX_sorted
-            return data
-        else : 
-            dataY = {key: round(float(value),2) for key, value in matrix[0].get(f"{param_x}").items() if not str(value) =="None"}
-            dataY_sorted = dict(sorted(dataY.items(), key=lambda item: abs(item[1]), reverse=True))
-            data["Y"] = dataY_sorted
-            dataX = {key: round(float(value),2) for key, value in matrix[0].get(f"{param_y}").items() if not str(value) =="None"}
-            dataX_sorted = dict(sorted(dataX.items(), key=lambda item: abs(item[1]), reverse=True))
-            data["X"] = dataX_sorted
 
-            return data
-    @app.callback(
-            Output('dropdown-heatmap-X', 'value'),
-            [Input(f'X-menu-div-{i}', 'n_clicks_timestamp') for i in range(1, 42)],
-            State("data-store", "data"),
-    )
-    def update_Xvalue(*args):
-        data = args[-1]
-        if not ctx.triggered_id :
-            raise PreventUpdate
-        id_menu = ctx.triggered_id[-2:]
-        try: 
-            id_menu = abs(int(id_menu))
-        except:
-            id_menu = int(id_menu[1])
-        new_param = list(data["X"].keys())[id_menu-1]
-        return new_param
-    
-    @app.callback(
-        Output('heatmap-graph-X', 'children'),
-        Input('dropdown-heatmap-Y', 'value'),        
-        Input('data-store', 'data'),
-    )
-    def update_output_div(param, data):
-        def get_background_color(value):
-            # Map the absolute value to a color intensity between 0 (white) and 255 (red)
-            intensity = int(255 * abs(value))
-            return f'rgba(0, 0,255, {intensity/400})'
-        print(data["matrix"][0].get(f"{param}"))
-        filtered_data_dict = {key: round(float(value),2) for key, value in data["matrix"][0].get(f"{param}").items() if not str(value) =="None"}
-        sorted_data_dict = dict(sorted(filtered_data_dict.items(), key=lambda item: abs(item[1]), reverse=True))
-
-        children = [
-            html.Div(
-                html.P(f'{content[0]} : {content[1]}'),
-                id=f'X-menu-div-{i+1}',
-                className='div-menu',
-                style={'background-color': get_background_color(content[1])}
-            )
-            for i, content in enumerate(sorted_data_dict.items())
-        ]
-        return children
-
-    @app.callback(
-        Output('heatmap-graph-Y', 'children'),
-        Input('dropdown-heatmap-X', 'value'),        
-        Input('data-store', 'data'),
-    )
-    def update_output_div(param, data):
-        def get_background_color(value):
-            # Map the absolute value to a color intensity between 0 (white) and 255 (red)
-            intensity = int(255 * abs(value))
-            return f'rgba(0, 0,255, {intensity/400})'
-        print(data["matrix"][0].get(f"{param}"))
-        filtered_data_dict = {key: round(float(value),2) for key, value in data["matrix"][0].get(f"{param}").items() if not str(value) =="None"}
-        sorted_data_dict = dict(sorted(filtered_data_dict.items(), key=lambda item: abs(item[1]), reverse=True))
-
-        children = [
-            html.Div(
-                html.P(f'{content[0]} : {content[1]}'),
-                id=f'Y-menu-div-{i+1}',
-                className='div-menu',
-                style={'background-color': get_background_color(content[1])}
-            )
-            for i, content in enumerate(sorted_data_dict.items())
-        ]
-        return children
 
     app.clientside_callback(
         """
-        function(n_clicks_1) {
-            updateDivDisplay(n_clicks_1);
+        function(param, data) {
+            childrens = window.dash_clientside.clientside.div_creator(param, data);
+            return childrens;
+        }
+        """,
+        [Output(f'Y-menu-div-{i+1}', 'children') for i in range(0, 44)],
+        [Output(f'Y-menu-div-{i+1}', 'style') for i in range(0, 44)],
+        Input('dropdown-heatmap-X', 'value'),
+        State('data-store', 'data'),
+    )
+
+
+    app.clientside_callback(
+        """
+        function(...timestamps) {
+            const dropdown = 'X'
+            var content = window.dash_clientside.clientside.update_dropvalue(dropdown, ...timestamps);
+            return content;
+        }
+        """,
+        Output('dropdown-heatmap-X', 'value'),
+        [Input(f'X-menu-div-{i+1}', 'n_clicks_timestamp') for i in range(0, 44)],
+        prevent_initial_call=True
+    )
+
+    app.clientside_callback(
+        """
+        function(...timestamps) {
+            const dropdown = 'Y'
+            var content = window.dash_clientside.clientside.update_dropvalue(dropdown, ...timestamps);
+            return content;
+        }
+        """,
+        Output('dropdown-heatmap-Y', 'value'),
+        [Input(f'Y-menu-div-{i+1}', 'n_clicks_timestamp') for i in range(0, 44)],
+        prevent_initial_call=True
+    )
+
+    app.clientside_callback(
+        """
+        function() {
+
+            if (dash_clientside.callback_context.triggered[0]) {
+                triggered = dash_clientside.callback_context.triggered[0];
+                const ctx = triggered.prop_id;
+
+                const output_id = ctx.split('.')[0].slice(-1) + '-heatmap-div';
+                var divElement = document.getElementById(output_id);
+
+                if (divElement.style.display === 'block') {
+                    divElement.style.display = 'none';
+                } else if (divElement.style.display === 'none') {
+                    divElement.style.display = 'block';
+                } else {
+                    divElement.style.display = 'block';
+                }
+            }
             return {};
+        }        
+        """,
+        Output('X-heatmap-div', 'style'),
+        Output('Y-heatmap-div', 'style'),
+        Input('updiv-X', 'n_clicks_timestamp'),
+        Input('updiv-Y', 'n_clicks_timestamp'),
+    )
+    app.clientside_callback(
+        """
+        function() {
+
+            if (dash_clientside.callback_context.triggered[0]) {
+                triggered = dash_clientside.callback_context.triggered[0];
+
+                const ctx = triggered.prop_id;
+                const output_id = ctx.split('.')[0]
+                var divElement = document.getElementById(output_id);
+                divElement.style.display = 'none';
+            return {};
+            }
         }
         """,
         Output('X-heatmap-div', 'style', allow_duplicate=True),
-        Input('dropX-div', 'n_clicks'),
-        prevent_initial_call=True   
-    )
-    app.clientside_callback(
-        """
-        function(n_clicks_2) {
-            updateDivDisplay_2(n_clicks_2);
-            return {};
-        }
-        """,
-        Output('X-heatmap-div', 'style'),
+        Output('Y-heatmap-div', 'style', allow_duplicate=True),
         Input('X-heatmap-div', 'n_clicks_timestamp'),
+        Input('Y-heatmap-div', 'n_clicks_timestamp'),
+        prevent_initial_call=True
     )
-
-    # app.clientside_callback(
-    #     """
-    #     function(contentId,...timestamps, heatmapDivDisplay) {
-    #         timestamps = timestamps.map(timestamp => timestamp || 0);
-    #         var highestTimestamp = Math.max(...timestamps);
-    #         var clicked_id = null;
-
-    #         for (var i = 1; i <= timestamps.length; i++) {
-    #             if (timestamps[i - 1] === highestTimestamp) {
-    #                 clicked_id = 'div-' + i;
-    #                 break;
-    #             }
-    #         }
-    #         console.log('Clicked ID:', clicked_id);
-
-    #         if (clicked_id) {
-    #             var contentElement = document.getElementById(contentId);
-    #             var clickedContent = document.getElementById(clicked_id);
-    #             var heatmapDiv = document.getElementById('heatmap-div');
-
-    #             if (heatmapDiv && window.getComputedStyle(heatmapDiv).display === 'none') {
-    #                 return 'weight (kg) change';
-    #             }
-
-    #             if (contentElement && clickedContent) {
-    #                 return clickedContent.textContent.trim();
-    #             }
-    #         }
-    #         return null;
-    #     }
-    #     """,
-    #     Output('dropdown-heatmap-X', 'value'),
-    #     Input('dropdown-heatmap-X', 'id'),
-    #     [Input(f'menu-div-{i}', 'n_clicks_timestamp') for i in range(1, 42)],
-    #     State('heatmap-div', 'style'),
-
-    # )
-
-    @app.callback(
-        Output("graph-2", "figure"),
-        Input("heatmap-graph-X", "clickData"),
-        Input("dropdown-heatmap-X", "value"),
-        State("store-selected-data", "data"),
-    )
-    def callback_parameter_scatter(clickData, parameter, selected_ids):
-        if not selected_ids : 
-            selected_ids = []
-        return update_scatter(clickData, parameter, selected_ids, None)
-
-    # @app.callback(
-    #     Output("visualMap-id", "option"),
-    #     Input("dropdown-heatmap-X", "value"),
-    # )
-    # def load_visualMap(param):
-    #     return {
-    #         'visualMap': {
-    #             'min': -1.0,
-    #             'max': 1.0,
-    #             "top":0,
-    #             "right":0,
-    #             'left': 0,
-    #             "borderColor" : "#fff111",
-    #             'itemWidth':90,
-    #             'itemHeight':30, 
-
-    #             'bottom': 0,
-    #             'calculable': True,
-    #             'orient': 'horizontal',
-    #             }
-    #         }
-    # @app.callback(
-    #     Output("store-selected-data", "data"),
-    #     Input("slider-age", "value"),
-    #     Input("slider-age", "marks"),
-    #     State("store-selected-data", "data"),
-    # )
-    # def callback_update_store(age_slider, length_fasting_slider, current_data):        
-
-# if not ctx.triggered_id :
-#     boxes  = [update_boxplot(parameter, None, None, False, False)]
-#     scatter = [update_scatter(None, None,  None, None)]
-#     return boxes + scatter + [[]]

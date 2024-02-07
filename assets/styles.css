@@ -140,7 +140,7 @@ div#X-heatmap-div::-webkit-scrollbar-thumb:hover {
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); 
   border-radius: 3px;
   position: absolute;
-  display: none;
+  display:none;
   top: 436px;
   width:48vw;
   max-width: 300px;
@@ -153,8 +153,9 @@ div#X-heatmap-div::-webkit-scrollbar-thumb:hover {
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); 
   border-radius: 3px;
   position: absolute;
-  /* display: none; */
-  top: 0px;
+  background-color: white;
+  display:none;
+  top: 125px;
   width:48vw;
   max-width: 300px;
   z-index: 1; 
@@ -163,7 +164,6 @@ div#X-heatmap-div::-webkit-scrollbar-thumb:hover {
   overflow-y:scroll;
   overflow-x: hidden;
 }
-
 /* #X-heatmap-div{
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); 
   border-radius: 3px;
@@ -180,11 +180,17 @@ div#X-heatmap-div::-webkit-scrollbar-thumb:hover {
 #dropX-div .Select-menu-outer{
   display:none
 }
-
+#updiv-X{
+  background-color: transparent;
+  position: absolute;
+  height: 36px; 
+  z-index: 100;
+}
 #dropX-div{
   position: absolute;
   top:400px;
-  z-index: 1;
+  height: 50px; 
+  z-index: 1000000000000;
   font-size: 14px;
   /* align-self: center; */
   left: 26vw;
@@ -237,6 +243,15 @@ div#X-heatmap-div::-webkit-scrollbar-thumb:hover {
   left:-65px;
   top: 195px;
 }
+#updiv-Y{
+  position: absolute;
+  z-index: 100;
+  width: 38px;
+  height: 175px;
+  top: 125px;
+  left:3px
+}
+
 #dropY-div .Select-menu-outer{
   /* transform: rotate(90deg);
   background-color: transparent;
