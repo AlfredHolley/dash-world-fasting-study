@@ -2,6 +2,8 @@ from dash import html, dcc
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 import pandas as pd
+import dash_echarts
+from callbacks_register import update_sex_pie
 # correlation_matrix = pd.read_excel("data/correlation_matrix.xlsx", index_col=0)
 # json_matrix = correlation_matrix.to_dict(orient="records")
 correlation_matrix = pd.read_excel("data/correlation_matrix.xlsx", index_col=0)
@@ -32,10 +34,9 @@ def layout():
         'CRP (mg/l) change', 'ESR 2h change', 'Leucocytes (103/µl) change', 'MCH (pg) change','MCV (fl) change', 'MCHC (g/dl) change',
         'Haematocrit (%) change',  'Haemoglobin (mmol/l) change','INR change']
     text_header = """ 
-    It was conducted at Buchinger Wilhelmi, a well-established fasting clinic, by a team led by Dr. Françoise Wilhelmi de Toledo and with the support of many of our guests and patients.
-    The study collected and evaluated data from 1,422 who completed the Buchinger Wilhelmi fasting programme over a period of 5, 10, 15 or 20 days in 2016. \n
-    The results of the study were published online on January 2, 2019 in the peer-reviewed journal PLOS ONE under the title “Safety, health improvement and well-being during a 4 to 21-day fasting period in an observational study including 1422 subjects.
-    We present an interactive dashboard that leverages the data gathered in this study, offering a dynamic and user-friendly interface for comprehending the outcomes of long-term fasting.
+    The largest scientific study on the effects of therapeutic fasting was conducted at the Buchinger Wilhelmi Clinic in Überlingen, Germany. 
+    The scientific team looked at data from 1,422 people who completed a fasting program lasting between 4 to 21 days. 
+    The results of the study were published in the scientific journal PLOS ONE on January 2, 2019. This interactive dashboard uses the data from this study to help people understand the effects of long-term fasting.
     """
     section_text_1 = """
     Physicians gathered clinical data, and trained nurses recorded participants' body weight each morning, following a standardized protocol. Blood pressure and pulse were measured in a seated position on the non-dominant arm. Abdominal circumference was determined using a measuring tape placed midway between the lowest rib and the iliac crest. 
@@ -116,10 +117,8 @@ def layout():
             html.Div([
                 dbc.Card([
                             dbc.CardHeader("Sex proportion"),
-                            dbc.CardBody(
-                                    dcc.Graph(id='sex-pie-chart',config={"displayModeBar": False})
-                                )
-                    ]
+                            dbc.CardBody(html.Div(dash_echarts.DashECharts(id = "sex-pie-chart", option = update_sex_pie([])), id = "sex-div"))
+                ]
                 ),
                 dbc.Card([
                             dbc.CardHeader("Age (mean)"),
@@ -128,6 +127,7 @@ def layout():
                                 dcc.RangeSlider(
                                     18, 100, value=[18,100], allowCross=False, marks  = None, 
                                     id = "slider-age",
+                                    step=1,  # Ajoutez cette propriété pour définir le saut à 1
                                     tooltip={"placement": "bottom", "always_visible": True}
                                     )
                             )
@@ -135,12 +135,17 @@ def layout():
                 ), 
                 dbc.Card(
                         [
-                            dbc.CardHeader("Fasting duration (mean)"),
-                            dbc.CardBody(
-                                [
-                                    html.Div(html.H4(id='length-fast-text'), className="card_info"),
-                                ]
+                        dbc.CardHeader("Fasting duration (mean)"),
+                        dbc.CardBody(
+                            [html.Div(html.H4(id='length-fast-text'), className="card_info")]
                             ),
+                        dbc.CardFooter(
+                            dcc.RangeSlider(
+                                3, 23, value=[3,23], allowCross=False, marks  = None, 
+                                id = "slider-fast",
+                                tooltip={"placement": "bottom", "always_visible": True}
+                                )
+                        )
                         ],
                     )
                 ], className="card-container",

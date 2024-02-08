@@ -75,9 +75,15 @@ div.card{
 }
 #sex-pie-chart{
   margin: auto;
-  width: 120px;
-  height: 120px;
+  width: 150px;
+  height: 150px;
 }
+#sex-pie-chart-2{
+  margin: auto;
+  width: 150px;
+  height: 150px;
+}
+
 *{
   font-family:"VistaSansLight", sans-serif  !important;
 }
@@ -247,6 +253,7 @@ div#X-heatmap-div::-webkit-scrollbar-thumb:hover {
   position: absolute;
   z-index: 100;
   width: 38px;
+  font-size :13px;
   height: 175px;
   top: 125px;
   left:3px
@@ -273,12 +280,13 @@ div.div-menu:hover{
 
 }
 div.div-menu{
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   height:33px;
   position:relative;
   display: flex; 
   align-items: center; 
   justify-content: center; 
+  text-align: center
 }
 .div-menu, .div-menu * {
   margin: 0; 

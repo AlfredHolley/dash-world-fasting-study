@@ -1,12 +1,14 @@
 from dash import Input, Output, State, callback_context as ctx, ClientsideFunction, Patch
 from dash.exceptions import PreventUpdate
+import dash
 import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-
+import dash_echarts
 np.random.seed(0)  # no-display
 import plotly.io as pio
+import time
 pio.templates.default = "plotly_white"
 
 
@@ -16,6 +18,52 @@ df = df_raw.reset_index(drop = True).set_index("id").copy()
 df0 =df.query("timepoint.eq(0)").copy()
 df1 =df.query("timepoint.eq(1)").copy()
 list_param_correlation = list(correlation_matrix.index)
+
+def update_sex_pie(selected_ids):
+
+    if not selected_ids : 
+        n_males = 581
+        n_females = 841
+    else :                                   # its important to have else here because the dataframe is not in layout.py
+        df_filtered = df0.loc[selected_ids]
+        n_males = df_filtered[df_filtered.sex == "M"].shape[0]
+        n_females = df_filtered[df_filtered.sex == "F"].shape[0]
+
+    option = {
+        "title": {
+            "text": None,
+        },
+        "tooltip": {
+            "trigger": 'item'
+        },
+        "series": [
+            {
+                "labelLine": {"show": False},
+                "type": 'pie',
+                "selectedMode": 'single',
+                "selectedOffset": 6,  #     cette valeur selon vos besoins
+                "select": {"itemStyle": {"color": 'red', "opacity": 0.5}},
+                "radius": '80%',
+                "data": [
+                    { "value": n_males, "name": 'M'},
+                    { "value": n_females, "name": 'F'},
+                ],
+                "color": ["#465FFF", "#FFBFF6"],
+                "bottom":0,
+                "top":0,
+                "legend": False,
+                "label":{"position":"inner", "formatter": "{b} : {c}", "fontSize": 13, "fontWeight": "bold"},
+                "emphasis": {
+                    "itemStyle": {
+                        "color": 'red',
+                        "opacity": 0.5,
+                    }
+                }
+            }
+        ],
+    }
+    
+    return option
 
 def update_scatter(parameterY, parameter, selected_id, selectedpoints_local):
     selectedpoint = []
@@ -57,7 +105,8 @@ def update_scatter(parameterY, parameter, selected_id, selectedpoints_local):
     fig.update_xaxes(fixedrange=True, title= None)
     fig.update_yaxes(fixedrange=True, gridcolor='rgba(0,0,0,0.065)', ticklabelposition="inside top", title=None)
 
-    if selectedpoints_local and selectedpoints_local["lassoPoints"]:
+    if selectedpoints_local : #avoid bug to have these double check if conditions (not if _ and _)
+        if selectedpoints_local["lassoPoints"]:
             lasso_points = selectedpoints_local["lassoPoints"]
             x_points = lasso_points['x']
             y_points = lasso_points['y']
@@ -222,21 +271,22 @@ def update_boxplot(selected_y, selected_id, selectedpoints_local, display_select
     )
     fig.update_yaxes(fixedrange=True, gridcolor='rgba(0,0,0,0.065)')
 
-    if selectedpoints_local and selectedpoints_local["range"]:
-        ranges = selectedpoints_local["range"]
-        selection_bounds = {
-            "x0": ranges["x"][0],
-            "x1": ranges["x"][1],
-            "y0": ranges["y"][0],
-            "y1": ranges["y"][1],
-        }
-        fig.add_shape(
-            dict(
-                {"type": "rect", "line": {"width": 2, "dash": "dot", "color": "darkgrey"}},
-                **selection_bounds
-            ))
+    if selectedpoints_local : #avoid bug to have these double check if conditions (not if _ and _)
+        if selectedpoints_local["range"]:
+            ranges = selectedpoints_local["range"]
+            selection_bounds = {
+                "x0": ranges["x"][0],
+                "x1": ranges["x"][1],
+                "y0": ranges["y"][0],
+                "y1": ranges["y"][1],
+            }
+            fig.add_shape(
+                dict(
+                    {"type": "rect", "line": {"width": 2, "dash": "dot", "color": "darkgrey"}},
+                    **selection_bounds
+                ))
     if display_selected_box == True and selected_id: 
-        return fig_selected
+        return {"data": fig_selected.data, "layout": fig_selected.layout}
     else :
         return  {"data": fig.data, "layout": fig.layout}
 
@@ -256,10 +306,10 @@ def register_callbacks(app):
     @app.callback(
         Output(f"graph-1", "figure", allow_duplicate=True),
         Output(f"graph-2", "figure", allow_duplicate=True),
+        Output("sex-pie-chart", "option"),
         Output("store-selected-data", "data", allow_duplicate=True),
         Input(f"graph-1", "selectedData"),
         Input(f"graph-2", "selectedData"),
-        Input(f"slider-age", "value"),
         State(f"parameter-dropdown-1", "value"),
         State(f"switch-selected-1", "checked"),
         State(f"switch-1", "checked"),
@@ -268,7 +318,7 @@ def register_callbacks(app):
         State("store-selected-data", "data"),
         prevent_initial_call=True
     )
-    def callback_on_selection(select_1, select_2, age, parameter, switch_box_1, switch_box_2, parameterY, dropdown_scatter, current_data):
+    def callback_on_selection(select_1, select_2, parameter, switch_box_1, switch_box_2, parameterY, dropdown_scatter, current_data):
         if not current_data :
             current_data = []
         number_id = ctx.triggered_id[-1]
@@ -280,25 +330,18 @@ def register_callbacks(app):
 
         else :
             selected_id = [] 
-        print("age : ", age)
-
-        print("selected_id : ", len(set(selected_id)))
-
-        selected_id = list(set(selected_id).intersection(set(df0[df0["age (years)"].between(age[0], age[1])].index)))
-        print("selected_id after: ", len(set(selected_id)))
-        boxes = [
-            update_boxplot(
-                parameter, selected_id,
-                selected_data[0] if number_id == "1" else None, 
-                switch_box_1, switch_box_2)]
-        scatter = [
-            update_scatter(
-                parameterY, dropdown_scatter, selected_id,
-                selected_data[1] if number_id == "2" else None,
-            )]
+        boxes   = update_boxplot(
+                    parameter, selected_id,
+                    selected_data[0] if number_id == "1" else None, 
+                    switch_box_1, switch_box_2)
+        scatter = update_scatter(
+                    parameterY, dropdown_scatter, selected_id,
+                    selected_data[1] if number_id == "2" else None,
+            )
+        pie_chart = update_sex_pie(selected_id)
             
-        return boxes + scatter + [selected_id]
-
+        return boxes, scatter, pie_chart, selected_id
+    
     @app.callback(
         Output("graph-1", "figure"),
         Input("parameter-dropdown-1", "value"),
@@ -312,6 +355,72 @@ def register_callbacks(app):
         return update_boxplot(parameter, selected_ids, None, switch_1, switch_2)
 
     @app.callback(
+        Output("graph-1", "figure", allow_duplicate=True),
+        Output("graph-2", "figure", allow_duplicate=True),
+        Output('sex-pie-chart', 'option', allow_duplicate=True),
+        Output("store-selected-data", "data"),
+        Output("slider-age", "value"),
+        Output("slider-fast", "value"),
+        Output("sex-pie-chart", "reset_id"),
+        Input("graph-1", "selectedData"),
+        Input("graph-2", "selectedData"),
+        Input("slider-age", "value"),
+        Input("slider-fast", "value"),
+        Input("sex-pie-chart", "selected_data"),
+        State("switch-selected-1", "checked"),
+        State("switch-1", "checked"),
+        State("parameter-dropdown-1", "value"),
+        State("sex-pie-chart", "reset_id"),
+        prevent_initial_call=True
+    )
+    def update_age(rect, lasso, age, fast, sex, switch_box_1, switch_box_2, selected_param, reset_id_echarts):
+      if "graph" in ctx.triggered_id :
+          return dash.no_update, dash.no_update, dash.no_update, dash.no_update, [18,100], [3,23], 1
+      
+      elif "age" in ctx.triggered_id :
+        trigger_var = 0
+        selected_id = list(set(df0[df0["age (years)"].between(age[0], age[1])].index))
+        reset_id_echarts = 1
+
+      elif "fast" in ctx.triggered_id :
+        trigger_var = 1
+        selected_id = list(set(df0[df0["fasting duration (days)"].between(fast[0], fast[1])].index))
+        reset_id_echarts = 1
+
+      elif "pie" in ctx.triggered_id :
+        if len(sex["selected"]) == 0:
+            selected_id = []
+        else : 
+            sex_catched = "M" if sex["selected"][0]["dataIndex"][0] == 0 else "F"
+            selected_id = list(set(df0[df0["sex"] == sex_catched].index))
+        trigger_var = 2
+
+      selected_id_index = [id - 1 for id in selected_id]
+
+      if len(selected_id) == 1422:
+          selected_id = []  
+          selected_id_index = []  
+
+      fig_scatter_patched = Patch()
+      fig_scatter_patched["data"][0].selectedpoints = selected_id_index      
+      fig_scatter_patched.layout.shapes = None
+
+
+      fig_box_patched = Patch()
+      fig_box_patched['data'] = update_boxplot(selected_param, selected_id, None,  switch_box_1, switch_box_2)["data"]
+
+      callback_var = [[dash.no_update,[3,23], 1], [[18,100],dash.no_update, 1], [[18,100],[3,23], 0 if reset_id_echarts != 0 else dash.no_update]]
+
+      return  (fig_box_patched, 
+               fig_scatter_patched, 
+               update_sex_pie(selected_id) if trigger_var != 2 else update_sex_pie([]),
+               selected_id, 
+               callback_var[trigger_var][0], 
+               callback_var[trigger_var][1], 
+               callback_var[trigger_var][2])
+      
+
+    @app.callback(
         Output("graph-2", "figure"),
         Input("dropdown-heatmap-Y", "value"),
         Input("dropdown-heatmap-X", "value"),
@@ -320,35 +429,64 @@ def register_callbacks(app):
     def callback_parameter_scatter(parameterY, parameter, selected_ids):
         if not selected_ids : 
             selected_ids = []
-        # if ctx.triggered_id is None:
-        #     return update_scatter(parameterY, parameter, selected_ids, None)
-        # else :
-        #     fig_patched = Patch()
-        #     fig_patched["data"] = update_scatter(parameterY, parameter, selected_ids, None)["data"]
-        #     return fig_patched
-        # patched_figure["data"] = 
-        return update_scatter(parameterY, parameter, selected_ids, None)
+        if ctx.triggered_id is None:
+            return update_scatter(parameterY, parameter, selected_ids, None)
+        else :
+            fig_patched = Patch()
+            fig_patched["data"] = update_scatter(parameterY, parameter, selected_ids, None)["data"]
+            fig_patched.layout.shapes = None
 
+            return fig_patched
 
-    @app.callback(
-        Output('sex-pie-chart', 'figure'),
-        Input('store-selected-data', 'data'),
-        )
-    def update_sex(selected_ids):
-        if not selected_ids : 
-            selected_ids = df0.index
+    # @app.callback(
+    #     Output('sex-pie-chart', 'option'),
+    #     Input('store-selected-data', 'data'), 
+    #     )
+    # def update_sex_option(selected_ids, ts, selected):
+    #     if selected : 
+    #         print(selected["selected"][0]["dataIndex"][0])
 
-        df_filtered = df0.loc[selected_ids]
-        counts_sex = df_filtered.sex.value_counts().sort_index(ascending=False)
-        fig = px.pie(values=counts_sex.values, names=counts_sex.index)
-        fig.update_traces(
-            textposition='inside', textfont_size=15, textinfo='percent+label',sort=False,
-            showlegend=False, textfont_color="white", texttemplate="%{label}<br>%{percent:.0%}"
-            )
-        fig.update_layout(
-            margin={"l": 0, "r": 0, "b": 0, "t": 15}
-            )
-        return fig 
+    #     if not selected_ids : 
+    #         selected_ids = df0.index
+
+    #     df_filtered = df0.loc[selected_ids]
+    #     n_males = df_filtered[df_filtered.sex == "M"].shape[0]
+    #     n_females = df_filtered[df_filtered.sex == "F"].shape[0]
+    #     option = {
+    #         "title": {
+    #             "text": None,
+    #         },
+    #         "tooltip": {
+    #             "trigger": 'item'
+    #         },
+    #         "series": [
+    #             {
+    #                 "labelLine": {"show": False},
+    #                 "type": 'pie',
+    #                 "selectedMode": 'single',
+    #                 "selectedOffset": 6,  #     cette valeur selon vos besoins
+    #                 "select": {"itemStyle": {"color": 'red', "opacity": 0.5}},
+    #                 "radius": '80%',
+    #                 "data": [
+    #                     { "value": n_males, "name": 'M'},
+    #                     { "value": n_females, "name": 'F'},
+    #                 ],
+    #                 "color": ["#465FFF", "#FFBFF6"],
+    #                 "bottom":0,
+    #                 "top":0,
+    #                 "legend": False,
+    #                 "label":{"position":"inner", "formatter": "{b} : {c}", "fontSize": 13, "fontWeight": "bold"},
+    #                 "emphasis": {
+    #                     "itemStyle": {
+    #                         "color": 'red',
+    #                         "opacity": 0.5,
+    #                     }
+    #                 }
+    #             }
+    #         ],
+    #     }
+        
+    #     return option
 
     @app.callback(
         Output('age-text', 'children'),
@@ -362,7 +500,7 @@ def register_callbacks(app):
             text_length_fast = f"{df0['fasting duration (days)'].mean():.1f} days"	
         else :
             df_filtered = df0.loc[selected_ids]
-            text_age = f"{df_filtered['age (years)'].mean():.1f}"
+            text_age = f"{df_filtered['age (years)'].mean():.1f} days"
             text_length_fast = f"{df_filtered['fasting duration (days)'].mean():.1f} days"	
         
         return text_age, text_length_fast
