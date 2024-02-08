@@ -18,7 +18,8 @@ body{
     padding-right: 2%;
   }
 .header-container > p{
-  font-size: 0.7rem;
+  font-size: 0.75rem;
+  line-height:1.5;
 
 }
 .cmSQpo{
@@ -62,7 +63,7 @@ h4 {
 
 h5 {
   font-size: 1.5rem;
-  color: #5bc2e7; 
+  color: #7bd5f5; 
 }
 div.card{
   text-align: center;
@@ -93,7 +94,7 @@ div.card{
 .rc-slider-tooltip-inner{
   width:19px;
   height:19px;
-  font-size: 8.5px;
+  font-size: 8.8px;
   border-radius: 15px;
 }
 .card-container{
@@ -119,29 +120,19 @@ div.card-body{
   width:300px;
   margin-bottom:300px;
 }
-/* #div-menu-X{
-  margin-bottom:300px;
-} */
-#X-heatmap-graph{ 
-  z-index: 500000;
-  /* height: 1800px; */
-}
-div#X-heatmap-div::-webkit-scrollbar {
-  width: 10px;
-}
 
+div#X-heatmap-div::-webkit-scrollbar {
+  width: 6px;
+}
 div#X-heatmap-div::-webkit-scrollbar-track {
   background-color: #f1f1f1;
 }
-
 div#X-heatmap-div::-webkit-scrollbar-thumb {
   background-color: #a2a2a2;
 }
-
 div#X-heatmap-div::-webkit-scrollbar-thumb:hover {
   background-color: #7bd5f5;
 }
-
 #X-heatmap-div{
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); 
   border-radius: 3px;
@@ -149,6 +140,7 @@ div#X-heatmap-div::-webkit-scrollbar-thumb:hover {
   display:none;
   top: 436px;
   width:48vw;
+  background-color: white;
   max-width: 300px;
   left:26vw;
   height:220px;
@@ -170,19 +162,9 @@ div#X-heatmap-div::-webkit-scrollbar-thumb:hover {
   overflow-y:scroll;
   overflow-x: hidden;
 }
-/* #X-heatmap-div{
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); 
-  border-radius: 3px;
-  position: absolute;
+#dropY-div .Select-menu-outer{
   display: none;
-  top: 436px;
-  width:48vw;
-  left:26vw;
-  height:220px;
-  overflow-y:scroll;
-  overflow-x: hidden;
-} */
-
+}
 #dropX-div .Select-menu-outer{
   display:none
 }
@@ -198,10 +180,18 @@ div#X-heatmap-div::-webkit-scrollbar-thumb:hover {
   height: 50px; 
   z-index: 1000000000000;
   font-size: 14px;
-  /* align-self: center; */
   left: 26vw;
-
 }
+.Select-control {
+  border-top:0;
+  border-right:0;
+  border-left:0;
+}
+
+.Select-value {
+  text-align: center;
+}
+
 #dropdown-heatmap-X .Select-control{
   max-width: 300px;
 }
@@ -227,15 +217,6 @@ div#X-heatmap-div::-webkit-scrollbar-thumb:hover {
 #div-graph-2 .is-focused:not(.is-open) > .Select-control {
   border-color: #ffffff; 
 }
-.Select-control {
-  border-top:0;
-  border-right:0;
-  border-left:0;
-}
-
-.Select-value {
-  text-align: center;
-}
 
 #graph-2{
   width: calc(100% - 60px);
@@ -259,12 +240,7 @@ div#X-heatmap-div::-webkit-scrollbar-thumb:hover {
   left:3px
 }
 
-#dropY-div .Select-menu-outer{
-  /* transform: rotate(90deg);
-  background-color: transparent;
-  z-index:1; */
-  display: none;
-}
+
 #dropdown-heatmap-Y{
   width:175px; 
 }
@@ -302,29 +278,31 @@ div.div-menu::after {
   z-index: -1;
 }
 
-/* font-size: -webkit-calc(65px * 0.33);
-font-size: calc(70px * 0.33); }
+#footer{
+  background-color: #171717;
+  color:white;
+  text-align: center;
 
-/* h6 {
-  font-size: 1.1rem; } */
-
-/* p{
-  font-size: 1rem;
-  margin-top:5cap;
-  margin-left: 2cap;
-  margin-right: 2cap;
-
-}  */
-
-/* .graph-container-1{
-  padding-left: 10cap; 
-  padding-right: 10cap; 
-} */
-
-/* .graph-container-1 >div{
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+}
+#markdown-footer-1 > p{
+  color:white;
+  font-size: 0.75rem;
+}
+#markdown-footer-2 > p{
+  color:white;
+  font-size: 0.67rem;
 }
 
+#footer > p{
+  color:white;
+  font-size: 0.6rem;
+}
+#footer > a{
+  color:white;
+  font-size: 0.67rem;
+  text-decoration: none; /* Pour enlever le soulignement */
+}
+
+#footer > a:hover{
+  color: #7bd5f5;
+}

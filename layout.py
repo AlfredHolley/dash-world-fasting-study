@@ -53,6 +53,7 @@ def layout():
     section_text_4 = """
     Blood analysis was conducted following international protocols to understand what are the effects of long-term fasting on lipid profiles, glycemic markers, and blood count metrics to coagulation factors, liver function indicators, inflammatory biomarkers, renal function measures, and electrolyte levels.
     """
+    text_corr = """The chart above shows how different factors are connected in our study. The colours in the horizontal menu indicate how strongly each factor is linked (correlated) to the one chosen on the vertical axis."""
     all_text = section_text_1 + "\n" + section_text_2 + "\n" + section_text_3 + "\n" + section_text_4
     clinical_param = ['weight (kg)','BMI (kg/m²)','waist (cm)','SBP (mmHg)','DBP (mmHg)','puls (beats/min)']
     well_being = ['PWB (0-10)','EWB (0-10)']
@@ -98,7 +99,6 @@ def layout():
                                 value=all_parameters[0],
                                 clearable=False, 
                                 searchable=False
-
                             ),
                             dcc.Graph(id=f'graph-1',
                             config={
@@ -107,6 +107,8 @@ def layout():
                                 "modeBarButtonsToRemove" :["toImage","zoom2d", "pan2d","lasso2d", "zoomIn2d", "zoomOut2d", "autoScale2d", "resetScale2d",
                                                     "hoverClosestCartesian", "hoverCompareCartesian", "toggleSpikelines", "resetViews",],
                                 }),
+
+
                             add_switch(1),
                         ], id = "div-1"
                     ) 
@@ -213,7 +215,17 @@ def layout():
                     ),
                 ])
             ], id = "div-graph-2"),
-
-            html.Div([], className="div-heatmap"),
+            html.Div(html.P(f"{text_corr}"), className="header-container"), 
+            html.Div(style = {"height": "100px"}), 
+            html.Footer(id = "footer", 
+                        children = [
+                            html.Div(style = {"height": "40px"}),
+                            html.H5("Contact"),
+                            dcc.Markdown("Wilhelm-Beck-Str. 27 &nbsp | &nbsp 88662 Überlingen &nbsp | &nbsp Germany", id = "markdown-footer-1"),
+                            dcc.Markdown("Tel: +49 7551 807-0  &nbsp | &nbsp Fax: +49 7551 807-100", id = "markdown-footer-2"),
+                            html.A("https://www.buchinger-wilhelmi.com/", href="https://www.buchinger-wilhelmi.com/", target="_blank"),
+                            html.Div(style = {"height": "64px"})
+                                    ] 
+            )
 
     ])

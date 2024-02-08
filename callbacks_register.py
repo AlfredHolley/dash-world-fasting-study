@@ -408,7 +408,7 @@ def register_callbacks(app):
 
       fig_box_patched = Patch()
       fig_box_patched['data'] = update_boxplot(selected_param, selected_id, None,  switch_box_1, switch_box_2)["data"]
-
+      fig_box_patched.layout.shapes = None
       callback_var = [[dash.no_update,[3,23], 1], [[18,100],dash.no_update, 1], [[18,100],[3,23], 0 if reset_id_echarts != 0 else dash.no_update]]
 
       return  (fig_box_patched, 
