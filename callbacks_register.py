@@ -53,12 +53,12 @@ def update_sex_pie(selected_ids):
                 "top":0,
                 "legend": False,
                 "label":{"position":"inner", "formatter": "{b} : {c}", "fontSize": 13, "fontWeight": "bold"},
-                "emphasis": {
-                    "itemStyle": {
-                        "color": 'red',
-                        "opacity": 0.5,
-                    }
-                }
+                # "emphasis": {
+                #     "itemStyle": {
+                        # "color": 'red',
+                        # "opacity": 0.5,
+                    # }
+                # }
             }
         ],
     }
@@ -85,14 +85,16 @@ def update_scatter(parameterY, parameter, selected_id, selectedpoints_local):
         else :
             x = parameter
 
-    fig = px.scatter(df0, x=x, y=y, trendline="ols")
+    fig = px.scatter(df0, x=x, y=y, 
+                     trendline="ols", 
+                     hover_data=['fasting duration (days)', 'age (years)', 'sex'])
     fig.data[0]["name"] = "points"
 
     fig.update_traces(
         selector=dict(name = "points"),
         selectedpoints=selectedpoint,
         selected={"marker": {"opacity": 0.8,"color" : "red"}},
-        unselected={"marker": {"opacity": 0.5, "color" : "blue"}},
+        unselected={"marker": {"opacity": 0.3, "color" : "blue"}},
     )
 
     fig.update_layout(
@@ -104,6 +106,11 @@ def update_scatter(parameterY, parameter, selected_id, selectedpoints_local):
     )
     fig.update_xaxes(fixedrange=True, title= None)
     fig.update_yaxes(fixedrange=True, gridcolor='rgba(0,0,0,0.065)', ticklabelposition="inside top", title=None)
+    
+    # trendline_selected = px.scatter(df0.loc[selected_id], x=x, y=y, trendline="ols")
+    # trendline_selected.data[1]["name"] = "trendline_selected"
+    # trendline_selected.data[1]["line"]["color"] = "red"
+    # fig.add_trace(trendline_selected.data[1])
 
     if selectedpoints_local : #avoid bug to have these double check if conditions (not if _ and _)
         if selectedpoints_local["lassoPoints"]:
@@ -403,7 +410,7 @@ def register_callbacks(app):
 
       fig_scatter_patched = Patch()
       fig_scatter_patched["data"][0].selectedpoints = selected_id_index      
-      fig_scatter_patched.layout.shapes = None
+      fig_scatter_patched["data"].remove("trendline_selected")
 
 
       fig_box_patched = Patch()
@@ -437,56 +444,6 @@ def register_callbacks(app):
             fig_patched.layout.shapes = None
 
             return fig_patched
-
-    # @app.callback(
-    #     Output('sex-pie-chart', 'option'),
-    #     Input('store-selected-data', 'data'), 
-    #     )
-    # def update_sex_option(selected_ids, ts, selected):
-    #     if selected : 
-    #         print(selected["selected"][0]["dataIndex"][0])
-
-    #     if not selected_ids : 
-    #         selected_ids = df0.index
-
-    #     df_filtered = df0.loc[selected_ids]
-    #     n_males = df_filtered[df_filtered.sex == "M"].shape[0]
-    #     n_females = df_filtered[df_filtered.sex == "F"].shape[0]
-    #     option = {
-    #         "title": {
-    #             "text": None,
-    #         },
-    #         "tooltip": {
-    #             "trigger": 'item'
-    #         },
-    #         "series": [
-    #             {
-    #                 "labelLine": {"show": False},
-    #                 "type": 'pie',
-    #                 "selectedMode": 'single',
-    #                 "selectedOffset": 6,  #     cette valeur selon vos besoins
-    #                 "select": {"itemStyle": {"color": 'red', "opacity": 0.5}},
-    #                 "radius": '80%',
-    #                 "data": [
-    #                     { "value": n_males, "name": 'M'},
-    #                     { "value": n_females, "name": 'F'},
-    #                 ],
-    #                 "color": ["#465FFF", "#FFBFF6"],
-    #                 "bottom":0,
-    #                 "top":0,
-    #                 "legend": False,
-    #                 "label":{"position":"inner", "formatter": "{b} : {c}", "fontSize": 13, "fontWeight": "bold"},
-    #                 "emphasis": {
-    #                     "itemStyle": {
-    #                         "color": 'red',
-    #                         "opacity": 0.5,
-    #                     }
-    #                 }
-    #             }
-    #         ],
-    #     }
-        
-    #     return option
 
     @app.callback(
         Output('age-text', 'children'),

@@ -27,7 +27,7 @@ def layout():
         'puls (beats/min) change','LDL-C (mmol/l) change','HDL-C (mmol/l) change','LDL/HDL ratio change',
         'TG (mmol/l) change', 'glucose (mmol/l) change','HbA1c (mmol/mol) change','TC (mmol/l) change',
         'Acetoacetic acid (mg/dL) change', 'Uric acid (µmol/l) change',
-        'EWB (0-10) change', 'PWB (0-10) change','GOT (µkat/l) change', 'GPT (µkat/l) change', 'GGT (µkat/l) change',
+        'EWB (0-10) change', 'PWB (0-10) change','AP (µkat/l) change','GOT (µkat/l) change', 'GPT (µkat/l) change', 'GGT (µkat/l) change',
         'Na (mmol/l) change', 'Ca (mmol/l) change',  'K (mmol/l) change','Mg (mmol/l) change','PTT (sec) change', 'Erythrocytes (106/µl) change',
         'Creatinine (µmol/l) change', 'Urea (mmol/l) change', 'Quick (%) change',
         'Thrombocytes (103/µl) change', 'ESR 1h change', 
