@@ -10,3 +10,4 @@ openpyxl==3.1.2
 statsmodels==0.14.0
 dash_mantine_components==0.12.1
 dash_echarts==0.0.12.9
+polars==0.19.12
