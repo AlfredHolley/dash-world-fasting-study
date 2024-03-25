@@ -332,7 +332,7 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                                 textAnchor: 'end',
                                 distributed: false,
                                 style: {
-                                    fontSize: '15px',
+                                    fontSize: '13px',
                                     fontWeight: 'bold',
                                     colors: ['transparent'],
                                 },
