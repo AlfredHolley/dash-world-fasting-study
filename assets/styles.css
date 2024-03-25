@@ -1,4 +1,4 @@
-@font-face {
+/* @font-face {
   font-family: 'VistaSansOTmedium';
   src: url('VistaSansWeb/VistaSansMediumAlternates/med.eot');
   src: url('VistaSansWeb/VistaSansMediumAlternates/med.eot?#iefix') format('embedded-opentype'),
@@ -21,10 +21,10 @@
        url('VistaSansWeb/VistaSansRegularAlternates/reg.woff') format('woff');
   font-weight: normal;
   font-style: normal;
-}
+} */
 
 * {
-  font-family: VistaSansOTreg !important;
+  font-family:VistaSans !important;
 }
 
 #logo{
