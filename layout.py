@@ -114,11 +114,9 @@ def layout():
                                             "displayModeBar": True,
                                             'displaylogo': False,
                                             "modeBarButtonsToRemove" :["toImage","zoom2d", "pan2d","lasso2d", "zoomIn2d", "zoomOut2d", "autoScale2d", "resetScale2d",
-                                                                "hoverClosestCartesian", "hoverCompareCartesian", "toggleSpikelines"],
+                                                                       "hoverClosestCartesian", "hoverCompareCartesian", "toggleSpikelines"],
                                             }),
                                 ], id = "graph-1-div"),
-
-
                             add_switch(1),
                         ], id = "div-1"
                     ) 
@@ -139,8 +137,7 @@ def layout():
                             dbc.CardFooter(
                                 dcc.RangeSlider(
                                     18, 100, value=[18,100], allowCross=False, marks  = None, 
-                                    id = "slider-age",
-                                    step=1,  # Ajoutez cette propriété pour définir le saut à 1
+                                    id = "slider-age",step=1,  # Ajoutez cette propriété pour définir le saut à 1
                                     tooltip={"placement": "bottom", "always_visible": True}
                                     )
                             )
@@ -154,8 +151,7 @@ def layout():
                             ),
                         dbc.CardFooter(
                             dcc.RangeSlider(
-                                3, 23, value=[3,23], allowCross=False, marks  = None, 
-                                id = "slider-fast",
+                                3, 23, value=[3,23], allowCross=False, marks  = None,step=1, id = "slider-fast",
                                 tooltip={"placement": "bottom", "always_visible": True}
                                 )
                         )

@@ -56,8 +56,6 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                     ctx_trigger = ctx.prop_id.split(".")[0].slice(-1)
                     var dropdown_to_update = ctx_trigger === "X"? "Y":"X";
                     var param = ctx_trigger === "X" ? paramX : paramY;
-                    console.log(param)
-                    console.log(ctx_trigger)
                     create_divs(dropdown_to_update, param, data)
                 } else {
                     create_divs("X", "weight (kg) change", data)
@@ -78,28 +76,48 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                 return [window.dash_clientside.no_update, window.dash_clientside.no_update]
             },
             add_icon:function(){
+                var ctx = dash_clientside.callback_context.triggered[0]
                 var icon1 = {
                     'width': 512,
                     'height': 512,
                     'path': 'M20.5 224H40c-13.3 0-24-10.7-24-24V72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L98.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L185 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8H48.5z',
                     }
         
-                var config = {
+                var config_box = {
                     displayModeBar: true,
                     displaylogo: false,
                     modeBarButtonsToAdd: [
                         {
-                            name: 'reset selection',
+                            name: 'Reset Selection',
                             icon: icon1,
                             click: function(gd) {
                                 var currentVal = document.getElementById('button-reset').click();
                             },
-                                                    }
+                        }
                     ],
-                    modeBarButtonsToRemove: ['toImage','lasso2d']
-    
+                    modeBarButtonsToRemove: [
+                        "toImage","zoom2d", "pan2d","lasso2d", "zoomIn2d", "zoomOut2d", "autoScale2d", "resetScale2d",
+                        "hoverClosestCartesian", "hoverCompareCartesian", "toggleSpikelines"
+                    ]
                 }
-                    return config;
+                var config_scatter = {
+                    displayModeBar: true,
+                    displaylogo: false,
+                    modeBarButtonsToAdd: [
+                        {
+                            name: 'Reset Selection',
+                            icon: icon1,
+                            click: function(gd) {
+                                var currentVal = document.getElementById('button-reset').click();
+                            },
+                        }
+                    ],
+                    modeBarButtonsToRemove: [
+                        "toImage","zoom2d", "pan2d","select2d", "zoomIn2d", "zoomOut2d", "autoScale2d", "resetScale2d",
+                        "hoverClosestCartesian", "hoverCompareCartesian", "toggleSpikelines"
+                    ]
+                }
+                    return [config_box, config_scatter];
                 },
 
                 update_selection: function(fig, selected_ids) {
@@ -217,7 +235,6 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                     let fig_box_dict = {data : fig_box_obj.data, layout : fig_box_obj.layout}
                     
                     var paramY =document.getElementById("dropdown-heatmap-Y").innerText
-                    console.log(paramY)
                     let fig_scatter_obj = this.update_scatter(data, paramY,paramX, selected_ids_index);
                     let fig_scatter_dict = {data : fig_scatter_obj.data, layout : fig_scatter_obj.layout}
 
@@ -623,7 +640,7 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                 let layout = {
                     hovermode: false,
                     margin: {l: 0, r: 20, b: 21, t: 45},
-                    dragmode: "lasso",
+                    dragmode: false,
                     newselection:{mode:"gradual"},
                     plot_bgcolor: 'rgba(245,245,247,1)',
                     xaxis: {fixedrange: true, zeroline: false},

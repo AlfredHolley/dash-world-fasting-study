@@ -180,7 +180,7 @@ div.card{
 .card-container{
   display: flex;
   flex-direction: row;
-  justify-content:space-around;
+  justify-content:space-evenly;
   flex-wrap: wrap;
   padding-top: 0px;
   padding-left: 10px;

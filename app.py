@@ -10,6 +10,7 @@ app = Dash(__name__,
         )
 # Import dbc from dash_bootstrap_components
 # Wrap the layout in dbc.Container
+app.title = 'Study of 1422 Fasters - Buchinger Wilhelmi'
 app.layout = layout.layout
 
 # Register callbacks from callbacks.py

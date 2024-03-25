@@ -369,7 +369,9 @@ def register_callbacks(app):
             function_name='add_icon'
         ),
     Output('graph-1','config'),
-    Input('graph-1','id')
+    Output('graph-2','config'),
+    Input('graph-1','id'),
+    Input('graph-2','id'),
     )
 
     app.clientside_callback(
