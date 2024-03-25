@@ -1,0 +1,25 @@
+/*
+ * Emigre web font kit 51875ae73be4e
+ * 
+ * These fonts are not shareware. 
+ * Use of these fonts requires the purchase 
+ * of a license from Emigre, www.emigre.com  
+ * Please contact sales@emigre.com
+ *
+ * To purchase a license to use this font go to:
+ * http://www.emigre.com/fontpage.php?SVisSaMeA.html
+ *
+ * © 2012 Emigre, Inc
+ */
+
+
+@font-face {
+    font-family: 'VistaSansMedRegular';
+    src: url('vistasansmed-071211005EmigreWebOnly.eot');
+    src: url('vistasansmed-071211005EmigreWebOnly.eot?#iefix') format('embedded-opentype'),
+         url('vistasansmed-071211005EmigreWebOnly.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+

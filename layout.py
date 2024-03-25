@@ -2,10 +2,12 @@ from dash import html, dcc
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 import pandas as pd
-import dash_echarts
-from callbacks_register import update_sex_pie
+import polars as pl
 # correlation_matrix = pd.read_excel("data/correlation_matrix.xlsx", index_col=0)
 # json_matrix = correlation_matrix.to_dict(orient="records")
+df_raw = pl.read_parquet('data/merged_data_wide.parquet')
+json_df = df_raw.to_dicts()
+
 correlation_matrix = pd.read_excel("data/correlation_matrix.xlsx", index_col=0)
 json_matrix = [correlation_matrix.to_dict()]
 
@@ -64,7 +66,9 @@ def layout():
 
     def add_switch(id_graph):
         return html.Div(
-            [
+            [   
+                dcc.Store(id = "clientside-figure-store"),
+                dcc.Store(id='main-store', data= json_df),
                 dcc.Store(id='data-store', data= json_matrix),
                 dcc.Store(id="store-selected-data"),
 
@@ -80,9 +84,10 @@ def layout():
                     label='selected data ',
                     checked = False
                 )
-            ], id = "toggles-div" )
+            ], id = "toggles-div")
         
     return html.Div([
+                html.Div(id='button-reset'), 
                 html.Img(src="assets/BW_logo.svg", alt="BW_logo", width="200px", id = "logo"),
             html.Div([
                 html.H4("World largest Study on the fasting", id="header-title"),
@@ -100,13 +105,18 @@ def layout():
                                 clearable=False, 
                                 searchable=False
                             ),
-                            dcc.Graph(id=f'graph-1',
-                            config={
-                                "displayModeBar": True,
-                                'displaylogo': False,
-                                "modeBarButtonsToRemove" :["toImage","zoom2d", "pan2d","lasso2d", "zoomIn2d", "zoomOut2d", "autoScale2d", "resetScale2d",
-                                                    "hoverClosestCartesian", "hoverCompareCartesian", "toggleSpikelines", "resetViews",],
-                                }),
+                              # Placeholder for the custom arrow
+
+                            html.Div([
+                                # html.Img(src="assets/reset_icon.png", alt="resetButton", id="icon-img"),
+                                dcc.Graph(id=f'graph-1',
+                                          config={
+                                            "displayModeBar": True,
+                                            'displaylogo': False,
+                                            "modeBarButtonsToRemove" :["toImage","zoom2d", "pan2d","lasso2d", "zoomIn2d", "zoomOut2d", "autoScale2d", "resetScale2d",
+                                                                "hoverClosestCartesian", "hoverCompareCartesian", "toggleSpikelines"],
+                                            }),
+                                ], id = "graph-1-div"),
 
 
                             add_switch(1),
@@ -115,12 +125,13 @@ def layout():
 
             ], className="graph-container-1"),
 
-            html.Div(html.H4(id='study-characteristics'), className="card_info", style = {"text-align": "center"}), 
+            html.Div(html.H4(id='study-characteristics'), className="card_info"), 
             html.Div([
-                dbc.Card([
-                            dbc.CardHeader("Sex proportion"),
-                            dbc.CardBody(html.Div(dash_echarts.DashECharts(id = "sex-pie-chart", option = update_sex_pie([])), id = "sex-div"))
-                ]
+                dbc.Card(
+                    [
+                    dbc.CardHeader("Sex Proportion"),
+                    dbc.CardBody(html.Div(id="graph-3"),),
+                    ]
                 ),
                 dbc.Card([
                             dbc.CardHeader("Age (mean)"),
@@ -152,8 +163,12 @@ def layout():
                     )
                 ], className="card-container",
             ),
+            html.Div(id="test-3", children=["none"], style = {"display":"none"}),
+
             html.Div([
-                html.Div(id = "updiv-Y"), 
+                html.Div([
+                    html.Span(className='Select-arrow', id="my-spanY"),
+                ], id=f'updiv-Y'), 
                 html.Div(
                     dcc.Dropdown(
                         id=f'dropdown-heatmap-Y',
@@ -189,17 +204,15 @@ def layout():
                 }),
                 html.Div([
                     html.Div([
-                        html.Div(
-                            id=f'updiv-X',
-                            style={"width": "48vw","font-size": "13px", "z-index": 1000},
-                        ), 
+                        html.Div([
+                            html.Span(className='Select-arrow', id="my-spanX"),
+                        ], id=f'updiv-X'), 
                         dcc.Dropdown(
                             id = "dropdown-heatmap-X", 
                             options=[{"label": param, "value":param } for param in correlation_params],
                             value='baseline of the parameter',
                             clearable=False,
                             searchable=False,
-                            style={"width": "48vw","font-size": "13px"},
                         )
                     ], id = "dropX-div"
                     ),
@@ -216,6 +229,7 @@ def layout():
                 ])
             ], id = "div-graph-2"),
             html.Div(html.P(f"{text_corr}"), className="header-container"), 
+            html.Div(id= "info-div", children = ["info ..."], style= {"display":"none"}), 
             html.Div(style = {"height": "100px"}), 
             html.Footer(id = "footer", 
                         children = [
