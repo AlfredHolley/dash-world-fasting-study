@@ -16,4 +16,4 @@ app.layout = layout.layout
 # Register callbacks from callbacks.py
 callbacks_register.register_callbacks(app)
 
-app.run(host = "0.0.0.0", debug = False, port = 8051)
+app.run(host = "0.0.0.0", debug = True, port = 8051)

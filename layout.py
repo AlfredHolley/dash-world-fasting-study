@@ -76,11 +76,11 @@ def layout():
                     size="xs",
                     label="changes",
                     checked=False,
-                    id =  f"switch-{id_graph}"
+                    id =  f"switch-1"
                     ), 
                 dmc.Switch(
                     size="xs",
-                    id = f"switch-selected-{id_graph}",
+                    id = f"switch-selected-1",
                     label='selected data ',
                     checked = False
                 )

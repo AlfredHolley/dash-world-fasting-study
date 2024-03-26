@@ -76,13 +76,11 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                 return [window.dash_clientside.no_update, window.dash_clientside.no_update]
             },
             add_icon:function(){
-                var ctx = dash_clientside.callback_context.triggered[0]
                 var icon1 = {
                     'width': 512,
                     'height': 512,
                     'path': 'M20.5 224H40c-13.3 0-24-10.7-24-24V72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L98.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L185 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8H48.5z',
                     }
-        
                 var config_box = {
                     displayModeBar: true,
                     displaylogo: false,
@@ -91,14 +89,14 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                             name: 'Reset Selection',
                             icon: icon1,
                             click: function(gd) {
-                                var currentVal = document.getElementById('button-reset').click();
+                                document.getElementById('button-reset').click();
                             },
                         }
                     ],
                     modeBarButtonsToRemove: [
                         "toImage","zoom2d", "pan2d","lasso2d", "zoomIn2d", "zoomOut2d", "autoScale2d", "resetScale2d",
                         "hoverClosestCartesian", "hoverCompareCartesian", "toggleSpikelines"
-                    ]
+                    ] 
                 }
                 var config_scatter = {
                     displayModeBar: true,
@@ -108,7 +106,7 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                             name: 'Reset Selection',
                             icon: icon1,
                             click: function(gd) {
-                                var currentVal = document.getElementById('button-reset').click();
+                                document.getElementById('button-reset').click();
                             },
                         }
                     ],
@@ -117,7 +115,7 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                         "hoverClosestCartesian", "hoverCompareCartesian", "toggleSpikelines"
                     ]
                 }
-                    return [config_box, config_scatter];
+                return [config_box, config_scatter];
                 },
 
                 update_selection: function(fig, selected_ids) {
@@ -131,7 +129,6 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                     });
                     return new_fig;
                 },
-            
                 callback_on_selection: function(selectedpoints_g1,selectedpoints_g2, fig_box,fig_scatter, data) {
                     let ctx = dash_clientside.callback_context;
                     let number_id = ctx.triggered.map(t => t.prop_id.split('.')[0])[0].slice(-1);
@@ -456,12 +453,19 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                                 hovermode: false,
                                 xaxis: {
                                     tickvals: [0, 1],
-                                    ticktext: ['Pre', 'Post'],
+                                    ticktext: ['Baseline', 'Fasting'],
                                     zeroline: false,
+                                    fixedrange: true,
+                                },
+                                yaxis: {
+                                    zeroline: false,
+                                    showline: false, 
+                                    fixedrange: true,
+                                    ticklabelposition: "inside top"
                                 },                                
                                 dragmode: false,
                                 plot_bgcolor:'rgba(245,245,247,1)', 
-                                margin : {l: 10, r: 10, b: 30, t: 25}                      
+                                margin : {"l": 16, "r": 16, "b": 30, "t": 25}
                             };
                             
                             return {data: traces, layout: layout};
@@ -478,6 +482,7 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                                 showlegend: false,
                                 boxpoints: 'all',
                                 pointpos:0,
+                                selector: {type:'scatter'},
                                 marker: {color: 'blue', size: 5, opacity: 0.7},
                             });
                             traces_selected.push({
@@ -488,6 +493,7 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                                 boxpoints: 'all',
                                 pointpos:0,
                                 marker: {color: 'red', size: 5, opacity: 0.7},
+
                                 line: {color: 'rgba(255,0,0,0.6)'},
                                 fillcolor: 'rgba(255,0,0,0.3)',
                             });
@@ -495,17 +501,24 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                                 showlegend: false, 
                                 boxmode: 'group',
                                 legend: false, 
+                                modebar: {remove: ["select2d", "Reset Selection"]},
                                 hovermode: false,
                                 dragmode: false,
                                 plot_bgcolor:'rgba(245,245,247,1)',
                                 xaxis: {
                                     tickvals: [0, 1],
-                                    ticktext: ['Pre', 'Post'],
-                                    title: 'Points are not selectable', 
+                                    ticktext: ['Baseline', 'Fasting'],
+                                    // title: 'Points are not selectable', 
                                     zeroline: false,
                                     fixedrange: true,
                                 },
-                                margin : {l: 10, r: 10, b: 30, t: 25}
+                                yaxis: {
+                                    zeroline: false,
+                                    showline: false, 
+                                    fixedrange: true,
+                                    ticklabelposition: "inside top"
+                                },
+                                margin : {"l": 16, "r": 16, "b": 30, "t": 25}
 
                             };
                             return {data: traces_selected, layout: layout_selected };
@@ -547,7 +560,8 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                                     zeroline: false,
                                     showline: false, 
                                     fixedrange: true,
-                                },                          
+                                    ticklabelposition: "inside top"
+                                },          
 
                                 xaxis: {
                                     tickvals: [0],
@@ -558,13 +572,13 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                                 },
                                 newselection:{mode:"gradual"},
                                 plot_bgcolor:'rgba(245,245,247,1)', 
-                                margin : {"l": 10, "r": 10, "b": 30, "t": 25}                      
+                                margin : {"l": 16, "r": 16, "b": 30, "t": 25}
                             };
                             return {data: traces, layout: layout};
 
                         } else {
-
                         let traces_selected = [];
+    
                         traces_selected.push({
                             y: df0.filter(item => !item.is_selected).map(item => item[selected_y_change]),
                             type: 'box',
@@ -585,29 +599,38 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                             marker: {color: 'red', size: 5, opacity: 0.7},
                             line: {color: 'rgba(255,0,0,0.6)'},
                             fillcolor: 'rgba(255,0,0,0.2)',
+                            selected: {color: 'red', size: 5, opacity: 0.7},
+                            unselected : {color: 'red', size: 5, opacity: 0.7},
+
                         });
                         let layout_selected = {
                             showlegend: false, 
                             hovermode: false,
+                            modebar: {remove: ["select2d", "Reset Selection"],},
                             dragmode: false,
                             plot_bgcolor:'rgba(245,245,247,1)',
                             yaxis: {
                                 zeroline: false,
                                 showline: false, 
                                 fixedrange: true,
+                                ticklabelposition: "inside top"
                             },
+
                             xaxis: {
-                                tickvals: [0],
+                                tickvals: selectedIds.length > 0 ? [0.5] : [0],
                                 ticktext: ['Changes'],
-                                title: 'Points are not selectable', 
+                                // title: 'Points are not selectable',
                                 zeroline: false,
                                 showline: false, 
                                 fixedrange: true,
+
                             },
-                            margin : {"l": 10, "r": 10, "b": 30, "t": 25}
+                            margin : {"l": 16, "r": 16, "b": 30, "t": 25}
 
                         };
+
                         return {data: traces_selected, layout: layout_selected};
+                        // {data: traces_selected, layout: layout_selected};
                     }
                 }
             },

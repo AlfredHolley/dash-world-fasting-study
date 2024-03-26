@@ -370,9 +370,25 @@ def register_callbacks(app):
         ),
     Output('graph-1','config'),
     Output('graph-2','config'),
-    Input('graph-1','id'),
+    Input('graph-1','config'),
     Input('graph-2','id'),
     )
+
+    # app.clientside_callback(
+    #     ClientsideFunction(
+    #     namespace='clientside',
+    #     function_name='updator',
+    # ),
+    # Output('graph-1', 'config', allow_duplicate=True),
+    # Input('switch-1', 'checked'),
+    # Input('switch-selected-1', 'checked'),
+    # Input('graph-1', 'config'),
+    # prevent_initial_call=True
+    # )
+
+
+
+
 
     app.clientside_callback(
         ClientsideFunction(
